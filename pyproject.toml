@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "pyfuturerestore"
+version = "0.1.0"
+description = "A re-implementation of futurerestore in Python"
+authors = ["Mini-Exploit <miniexploitttt@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyipatcher = "^1.1.5"
+pymobiledevice3 = "^2.0.2"
+pyimg4 = "^0.7"
+m1n1Exception = "^2.7"
+requests = "^2.31.0"
+remotezip = "^0.12.1"
+ipsw-parser = "^1.1.5"
+argparse = "^1.4.0"
+
+[tool.poetry.scripts]
+pyfuturerestore = "pyfuturerestore.__main__:main"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/Mini-Exploit/pyipatcher/issues"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
