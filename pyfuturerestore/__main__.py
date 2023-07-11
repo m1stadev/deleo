@@ -17,7 +17,7 @@ def _main():
     parser.add_argument('--rkrn', metavar='PATH', nargs=1,
                         help='Set custom restore kernelcache for entering restore mode (requires use-pwndfu)')
     parser.add_argument('--set-nonce',metavar='NONCE',help='Set custom nonce from your blob then exit recovery (set nonce from your blob if no nonce is provided) (requires use-pwndfu)',nargs='?',const=None)
-    parser.add_argument('--ignore-nonce-matching',help='Ignore device\'s post-hax ApNonce being unmatched with blob\'s ApNonce (PROCEED WITH CAUTION) (requires use-pwndfu)')
+    parser.add_argument('--ignore-nonce-matching',help='Ignore device\'s post-hax ApNonce being unmatched with blob\'s ApNonce (PROCEED WITH CAUTION) (requires use-pwndfu)',action='store_true')
     parser.add_argument('--serial',help='Enable serial during boot (requires serial cable and use-pwndfu)',action='store_true')
     parser.add_argument('--boot-args',metavar='BOOTARGS',nargs=1,help='Set custom restore boot-args (PROCEED WITH CAUTION) (requires use-pwndfu)')
     parser.add_argument('--no-cache', help='Disable cached patched iBSS/iBEC (requires use-pwndfu)',action='store_true')
@@ -26,7 +26,6 @@ def _main():
     parser.add_argument('-s', '--sep', metavar='PATH', nargs=1, help='SEP to be flashed')
     parser.add_argument('-m','--sep-manifest',metavar='PATH',nargs=1,help='BuildManifest for requesting SEP ticket')
     parser.add_argument('--latest-baseband',help='Use latest signed SEP instead of manually specifying one',action='store_true')
-    parser.add_argument('-b', '--baseband', metavar='PATH', nargs=1, help='Baseband to be flashed')
     parser.add_argument('-b','--baseband',metavar='PATH',nargs=1,help='Baseband to be flashed')
     parser.add_argument('-p','--baseband-manifest',metavar='PATH',nargs=1,help='BuildManifest for requesting baseband ticket')
     parser.add_argument('-d', '--debug',help='More debug information during restore',action='store_true')
