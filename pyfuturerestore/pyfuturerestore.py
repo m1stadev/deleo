@@ -112,7 +112,11 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
 BaseRestore.__init__ = BaseRestore__init__
 
 def Recovery__init__(self, ipsw: BytesIO, device: Device, tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
+<<<<<<< HEAD
     BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
+=======
+    Recovery.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
+>>>>>>> d040572d80e7ceb0804c4ff44c4fea768b03f29a
                      logger=logging.getLogger(__name__))
     self.tss_localpolicy = None
     self.tss_recoveryos_root_ticket = None
@@ -712,5 +716,8 @@ class PyFuturerestore:
             self.logger.info('reinit done')
         self.logger.info('About to restore device')
         restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw, bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
-
+        self.logger.info('Booting ramdisk')
+        restore.recovery.boot_ramdisk()
+        self.logger.info('Starting restore')
+        restore.restore_device()
 
