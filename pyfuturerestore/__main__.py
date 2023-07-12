@@ -5,6 +5,8 @@ from m1n1Exception import *
 from zipfile import ZipFile
 from time import sleep
 
+set_package_name('pyfuturerestore')
+
 def _main():
     parser = argparse.ArgumentParser(description='pyfuturerestore - A re-implementation of futurerestore in Python', usage='pyfuturerestore [OPTIONS] IPSW')
     parser.add_argument('-t','--apticket',metavar='PATH',nargs=1,help='Signing tickets used for restoring')
