@@ -442,7 +442,7 @@ class PyFuturerestore:
                         continue
                     if device.idVendor == 0x05ac:
                         mode = Mode.get_mode_from_value(device.idProduct)
-                        if not mode:    continue
+                        if mode is None:    continue
                         return mode
                 except ValueError:
                     pass
