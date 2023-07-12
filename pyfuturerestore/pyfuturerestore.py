@@ -111,7 +111,7 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
 BaseRestore.__init__ = BaseRestore__init__
 
 def Recovery__init__(self, ipsw: BytesIO, device: Device, tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
-    super().__init__(ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
+    Recovery.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
                      logger=logging.getLogger(__name__))
     self.tss_localpolicy = None
     self.tss_recoveryos_root_ticket = None
