@@ -112,11 +112,7 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
 BaseRestore.__init__ = BaseRestore__init__
 
 def Recovery__init__(self, ipsw: BytesIO, device: Device, tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
-<<<<<<< HEAD
     BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
-=======
-    Recovery.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
->>>>>>> d040572d80e7ceb0804c4ff44c4fea768b03f29a
                      logger=logging.getLogger(__name__))
     self.tss_localpolicy = None
     self.tss_recoveryos_root_ticket = None
@@ -461,6 +457,7 @@ class PyFuturerestore:
         self.lockdown_cli: LockdownClient = None
         self.irecv: IRecv = None
         self.init_mode = self.pyfuturerestore_get_mode()
+        retassure(self.init_mode, 'Can\'t init, no device found')
         self.logger.info(f'Found device in {strmode(self.init_mode)}')
         if self.init_mode == Mode.NORMAL_MODE:
             for device in list_devices():
