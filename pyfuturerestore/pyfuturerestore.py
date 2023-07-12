@@ -246,7 +246,7 @@ Recovery.send_kernelcache = send_kernelcache
 
 def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update,
              ignore_fdr=False):
-    super().__init__(ipsw, device, tss, sepfw=sepfw, bbfw=bbfw, sepbm=sepbm, bbbm=bbbm, behavior=behavior, logger=logging.getLogger(__name__))
+    BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, bbfw=bbfw, sepbm=sepbm, bbbm=bbbm, behavior=behavior, logger=logging.getLogger(__name__))
     self.recovery = Recovery(ipsw, device, tss=tss, rdskdata=rdskdata, rkrndata=rkrndata, behavior=behavior)
     self.bbtss: Optional[TSSResponse] = None
     self._restored: Optional[RestoredClient] = None
@@ -322,7 +322,6 @@ def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw
         'KernelCache': self.send_component,
         'DeviceTree': self.send_component,
     }
-
 
 
 def send_baseband_data(self, message: typing.Mapping):
