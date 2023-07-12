@@ -458,7 +458,7 @@ class PyFuturerestore:
         self.irecv: IRecv = None
         self.init_mode = self.pyfuturerestore_get_mode()
         retassure(self.init_mode, 'Can\'t init, no device found')
-        self.logger.info(f'Found device in {strmode(self.init_mode)}')
+        self.logger.info(f'Found device in {strmode(self.init_mode)} mode')
         if self.init_mode == Mode.NORMAL_MODE:
             for device in list_devices():
                 try:
