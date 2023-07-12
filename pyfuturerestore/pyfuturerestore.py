@@ -437,9 +437,9 @@ class PyFuturerestore:
     def pyfuturerestore_get_mode(self):
         for device in find(find_all=True):
             try:
-                if device.manufacturer is None:
+                if device.idVendor is None:
                     continue
-                if 'Apple' in device.manufacturer:
+                if device.idVendor == 0x05ac:
                     mode = Mode.get_mode_from_value(device.idProduct)
                     if not mode:    continue
                     return mode
