@@ -480,7 +480,7 @@ class PyFuturerestore:
     def load_ap_ticket(self, path):
         retassure(os.path.isfile(path), f'APTicket not found at {path}')
         with open(path, 'rb') as f:
-            self.tss = plistlib.loads(f)
+            self.tss = plistlib.loads(f.read())
         self.im4m = pyimg4.IM4M(self.tss['ApImg4Ticket'])
         self.logger.info(f'Done reading signing ticket {path}')
 
