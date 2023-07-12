@@ -38,7 +38,8 @@ def _main():
     logger = get_my_logger(args.debug, name='pyfuturerestore')
     # args checks
     retassure(args.sep or args.latest_sep, 'SEP was not specified')
-    retassure(args.baseband or args.latest_baseband, 'Baseband was not specified')
+    if not args.no_baseband:
+        retassure(args.baseband or args.latest_baseband, 'Baseband was not specified')
     if args.latest_sep:
         retassure(not args.sep, 'can\'t specify --latest-sep and -s/--sep at once')
     if args.sep:
