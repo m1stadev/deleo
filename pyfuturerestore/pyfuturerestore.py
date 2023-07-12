@@ -6,6 +6,7 @@ from pyipatcher.logger import get_my_logger
 from pyipatcher.ipatcher import IPatcher
 import logging
 import requests
+from pyirecovery.no_backend_fix import fix
 import typing
 from zipfile import ZipFile
 from pymobiledevice3.exceptions import IncorrectModeError
@@ -111,7 +112,7 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
 BaseRestore.__init__ = BaseRestore__init__
 
 def Recovery__init__(self, ipsw: BytesIO, device: Device, tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
-    super().__init__(ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
+    BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
                      logger=logging.getLogger(__name__))
     self.tss_localpolicy = None
     self.tss_recoveryos_root_ticket = None
@@ -434,16 +435,23 @@ class PyFuturerestore:
         self.latest_bm = None
 
     def pyfuturerestore_get_mode(self):
-        for device in find(find_all=True):
-            try:
-                if device.idVendor is None:
-                    continue
-                if device.idVendor == 0x05ac:
-                    mode = Mode.get_mode_from_value(device.idProduct)
-                    if not mode:    continue
-                    return mode
-            except ValueError:
-                pass
+        try:
+            for device in find(find_all=True):
+                try:
+                    if device.idVendor is None:
+                        continue
+                    if device.idVendor == 0x05ac:
+                        mode = Mode.get_mode_from_value(device.idProduct)
+                        if not mode:    continue
+                        return mode
+                except ValueError:
+                    pass
+        except Exception as e:
+            if 'No backend available' in str(e):
+                if fix() != 0:
+                    self.logger.warning('Could not fix pymobiledevice3')
+                self.logger.info('Fix done, re-run pyfuturerestore now')
+                sys.exit(0)
 
     def init(self):
         self.lockdown_cli: LockdownClient = None

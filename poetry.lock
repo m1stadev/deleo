@@ -1545,6 +1545,20 @@ pyimg4 = ">=0.7,<0.8"
 pyquery = ">=2.0.0,<3.0.0"
 
 [[package]]
+name = "pyirecovery"
+version = "0.1.5"
+description = "A CLI wrapper of pymobiledevice3 that interacts with Recovery/DFU Apple devices"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "pyirecovery-0.1.5-py3-none-any.whl", hash = "sha256:1de531d141d294b38008f8f61de09ecd4fb4f6e27324e27d8d1a25c63d107cf9"},
+    {file = "pyirecovery-0.1.5.tar.gz", hash = "sha256:e2137add5522df75c4ae9d3ab24061bfda2589afb9622a495be66a5028866d8f"},
+]
+
+[package.dependencies]
+pymobiledevice3 = ">=2.0.2,<3.0.0"
+
+[[package]]
 name = "pykdebugparser"
 version = "1.2.4"
 description = "Python parser for kdebug events"
@@ -2198,4 +2212,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "215a06d27bc2892be9bfac3741c445ee6165f79d773e39addfd47ac00b0b79dc"
+content-hash = "f3a8e7bedda62f4ddaa7cd784aa6a70f798a0a72398a020314434160547ba20c"
