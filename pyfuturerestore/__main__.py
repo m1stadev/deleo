@@ -96,13 +96,13 @@ def _main():
             i -= 1
             sleep(1)
         print('')
-        if args.latest_baseband:
-            client.load_latest_baseband()
-        else:
-            retassure(os.path.isfile(args.baseband[0]), f'Baseband firmware not found at {args.baseband[0]}')
-            retassure(os.path.isfile(args.baseband_manifest[0]), f'Baseband BuildManifest not found at {args.baseband_manifest[0]}')
-            with open(args.sep[0], 'rb') as bb, open(args.sep_manifest[0], 'rb') as bbbm:
-                client.load_baseband(bb.read(), bbbm.read())
+    elif args.latest_baseband:
+        client.load_latest_baseband()
+    else:
+        retassure(os.path.isfile(args.baseband[0]), f'Baseband firmware not found at {args.baseband[0]}')
+        retassure(os.path.isfile(args.baseband_manifest[0]), f'Baseband BuildManifest not found at {args.baseband_manifest[0]}')
+        with open(args.sep[0], 'rb') as bb, open(args.sep_manifest[0], 'rb') as bbbm:
+            client.load_baseband(bb.read(), bbbm.read())
 
     if args.rdsk:
         client.load_ramdisk(args.rdsk[0])
