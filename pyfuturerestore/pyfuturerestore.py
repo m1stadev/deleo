@@ -684,8 +684,8 @@ class PyFuturerestore:
     def do_restore(self):
         retassure(self.sepfw, 'SEP was not loaded')
         retassure(self.sepbm, 'SEP BuildManifest was not loaded')
-        retassure(self.bbfw, 'Baseband was not loaded')
-        retassure(self.bbbm, 'Baseband BuildManifest was not loaded')
+        # retassure(self.bbfw, 'Baseband was not loaded')
+        # retassure(self.bbbm, 'Baseband BuildManifest was not loaded')
         self.enter_recovery()
         self.logger.info('Checking if the APTicket is valid for this restore')
         if not self.skip_blob:

@@ -3,6 +3,7 @@ import argparse
 from pyipatcher.logger import get_my_logger
 from m1n1Exception import *
 from zipfile import ZipFile
+from time import sleep
 
 def _main():
     parser = argparse.ArgumentParser(description='pyfuturerestore - A re-implementation of futurerestore in Python', usage='pyfuturerestore [OPTIONS] IPSW')
@@ -28,6 +29,7 @@ def _main():
     parser.add_argument('--latest-baseband',help='Use latest signed SEP instead of manually specifying one',action='store_true')
     parser.add_argument('-b','--baseband',metavar='PATH',nargs=1,help='Baseband to be flashed')
     parser.add_argument('-p','--baseband-manifest',metavar='PATH',nargs=1,help='BuildManifest for requesting baseband ticket')
+    parser.add_argument('--no-baseband',help='Skip checks and don\'t flash baseband',action='store_true')
     parser.add_argument('-d', '--debug',help='More debug information during restore',action='store_true')
     parser.add_argument('ipsw',metavar='iPSW',nargs=1)
     args = parser.parse_args()
@@ -82,14 +84,22 @@ def _main():
         retassure(os.path.isfile(args.sep_manifest[0]), f'SEP BuildManifest not found at {args.sep_manifest[0]}')
         with open(args.sep[0], 'rb') as sep, open(args.sep_manifest[0], 'rb') as sepbm:
             client.load_sep(sep.read(), sepbm.read())
-
-    if args.latest_baseband:
-        client.load_latest_baseband()
-    else:
-        retassure(os.path.isfile(args.baseband[0]), f'Baseband firmware not found at {args.baseband[0]}')
-        retassure(os.path.isfile(args.baseband_manifest[0]), f'Baseband BuildManifest not found at {args.baseband_manifest[0]}')
-        with open(args.sep[0], 'rb') as bb, open(args.sep_manifest[0], 'rb') as bbbm:
-            client.load_baseband(bb.read(), bbbm.read())
+    if args.no_baseband:
+        logger.warning('User specified is not to flash a baseband. This can make the restore fail if the device needs a baseband!')
+        i = 10
+        while i:
+            print('Continuing restore in ', end='')
+            print(i, end='\r')
+            i -= 1
+            sleep(1)
+        print('')
+        if args.latest_baseband:
+            client.load_latest_baseband()
+        else:
+            retassure(os.path.isfile(args.baseband[0]), f'Baseband firmware not found at {args.baseband[0]}')
+            retassure(os.path.isfile(args.baseband_manifest[0]), f'Baseband BuildManifest not found at {args.baseband_manifest[0]}')
+            with open(args.sep[0], 'rb') as bb, open(args.sep_manifest[0], 'rb') as bbbm:
+                client.load_baseband(bb.read(), bbbm.read())
 
     if args.rdsk:
         client.load_ramdisk(args.rdsk[0])
