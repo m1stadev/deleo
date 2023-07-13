@@ -5,6 +5,7 @@ from pymobiledevice3.restore.restore import Restore
 from pyipatcher.logger import get_my_logger
 from pyipatcher.ipatcher import IPatcher
 import logging
+from pathlib import Path
 import requests
 import typing
 from zipfile import ZipFile
@@ -19,6 +20,8 @@ from remotezip import RemoteZip
 from io import BytesIO
 import zipfile
 from usb.core import find
+from usb.backend.libusb1 import get_backend
+
 from typing import Mapping, Optional
 from m1n1Exception import retassure, reterror
 from pymobiledevice3.irecv import IRecv, Mode
@@ -421,6 +424,34 @@ def strmode(mode: Mode):
     else:
         return None
 
+# thx m1sta
+def _get_backend():  # Attempt to find a libusb 1.0 library to use as pyusb's backend, exit if one isn't found.
+    directories = (
+        '/usr/local/lib',
+        '/opt/procursus/lib',
+        '/usr/lib',
+        '/opt/homebrew/lib' # this works on my M2 Mac, tell me to add more if libusb is in a different path on your computer
+    )  # Common library directories to search
+
+    libusb1 = None
+    for libdir in directories:
+        for file in Path(libdir).glob('libusb-1.0.0.*'):
+            if not file.is_file() or (file.suffix not in ('.so', '.dylib')):
+                continue
+
+            libusb1 = file
+            break
+
+        else:
+            continue
+
+        break
+
+    if libusb1 is None:
+        return -1
+
+    return str(libusb1)
+
 class PyFuturerestore:
     def __init__(self, ipsw: ZipFile, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, verbose=False):
         if not os.path.isdir(PYFUTURERESTORE_TEMP_PATH):
@@ -449,8 +480,9 @@ class PyFuturerestore:
         self.latest_bm = None
 
     def pyfuturerestore_get_mode(self):
+        retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
         try:
-            for device in find(find_all=True):
+            for device in find(find_all=True, backend=get_backend(find_library=lambda _: backend)):
                 try:
                     if device.idVendor is None:
                         continue
