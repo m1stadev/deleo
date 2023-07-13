@@ -6,7 +6,6 @@ from pyipatcher.logger import get_my_logger
 from pyipatcher.ipatcher import IPatcher
 import logging
 import requests
-from no_backend_fix import fix
 import typing
 from zipfile import ZipFile
 from pymobiledevice3.exceptions import IncorrectModeError
@@ -462,11 +461,7 @@ class PyFuturerestore:
                 except ValueError:
                     pass
         except Exception as e:
-            if 'No backend available' in str(e):
-                if fix() != 0:
-                    self.logger.warning('Could not fix pymobiledevice3')
-                self.logger.info('Fix done, re-run pyfuturerestore now')
-                sys.exit(0)
+            reterror(f'Could not get mode: {e}')
 
     def init(self):
         self.lockdown_cli: LockdownClient = None
