@@ -238,11 +238,26 @@ def send_kernelcache(self):
     except USBError:
         pass
 
+def send_component(self, name: str):
+    # Use a specific TSS ticket for the Ap,LocalPolicy component
+    data = None
+    tss = self.tss
+    if name == 'Ap,LocalPolicy':
+        tss = self.tss_localpolicy
+        # If Ap,LocalPolicy => Inject an empty policy
+        data = lpol_file
+    if self.sepfw:
+        data = self.sep_build_identity.get_component(name, tss=tss, data=self.sepfw).personalized_data
+    else:
+        data = self.build_identity.get_component(name, tss=tss, data=data).personalized_data
+    self.logger.info(f'Sending {name} ({len(data)} bytes)...')
+    self.device.irecv.send_buffer(data)
 
 Recovery.__init__ = Recovery__init__
 Recovery.get_tss_response = get_tss_response
 Recovery.send_ramdisk = send_ramdisk
 Recovery.send_kernelcache = send_kernelcache
+Recovery.send_component = send_component
 
 
 def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update,
