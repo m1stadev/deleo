@@ -218,7 +218,10 @@ def send_ramdisk(self):
     ramdisk_delay = self.device.irecv.getenv('ramdisk-delay')
     self.logger.info(f'ramdisk-delay: {ramdisk_delay}')
 
+    sleep(2)
+    self.device.irecv.reset()
     self.device.irecv.send_command('ramdisk')
+
     sleep(2)
 
 def send_kernelcache(self):
