@@ -6,7 +6,7 @@ from pyipatcher.logger import get_my_logger
 from pyipatcher.ipatcher import IPatcher
 import logging
 import requests
-from pyirecovery.no_backend_fix import fix
+from no_backend_fix import fix
 import typing
 from zipfile import ZipFile
 from pymobiledevice3.exceptions import IncorrectModeError
