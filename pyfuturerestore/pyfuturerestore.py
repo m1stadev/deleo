@@ -702,12 +702,15 @@ class PyFuturerestore:
         else:
             self.logger.warning('NOT VALIDATING SHSH BLOBS ECID!')
         if self.pwndfu:
-            bootargs = self._bootargs if self._bootargs else ''
-            if self.serial:
-                bootargs += 'serial=0x3 '
-            bootargs += 'rd=md0 '
-            # Currently pyfuturerestore does not support update install
-            bootargs += '-v -restore debug=0x2014e keepsyms=0x1 amfi=0xff amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1 cs_enforcement_disable=0x1'
+            if self._bootargs:
+                bootargs = self._bootargs
+            else:
+                bootargs = ''
+                if self.serial:
+                    bootargs += 'serial=0x3 '
+                bootargs += 'rd=md0 '
+                # Currently pyfuturerestore does not support update install
+                bootargs += '-v -restore debug=0x2014e keepsyms=0x1 amfi=0xff amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1 cs_enforcement_disable=0x1'
             self.enter_pwnrecovery(bootargs=bootargs)
             self.init()
             self.logger.info('reinit done')
