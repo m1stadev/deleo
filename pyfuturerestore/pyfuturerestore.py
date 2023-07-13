@@ -248,8 +248,9 @@ def send_component(self, name: str):
         tss = self.tss_localpolicy
         # If Ap,LocalPolicy => Inject an empty policy
         data = lpol_file
-    if self.sepfw:
-        data = self.sep_build_identity.get_component(name, tss=tss, data=self.sepfw).personalized_data
+    if name in ('RestoreSEP', 'SEP'):
+        if self.sepfw:
+            data = self.sep_build_identity.get_component(name, tss=tss, data=self.sepfw).personalized_data
     else:
         data = self.build_identity.get_component(name, tss=tss, data=data).personalized_data
     self.logger.info(f'Sending {name} ({len(data)} bytes)...')
