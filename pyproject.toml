@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pyipatcher = "^1.1.5"
+pyipatcher = "^1.1.7"
 pymobiledevice3 = "^2.0.2"
 pyimg4 = "^0.7"
 m1n1Exception = "^2.7"
