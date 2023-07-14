@@ -483,6 +483,7 @@ class PyFuturerestore:
 
     def pyfuturerestore_get_mode(self):
         retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
+        self.logger.debug(f'USB backend: {backend}')
         try:
             for device in find(find_all=True, backend=get_backend(find_library=lambda _: backend)):
                 try:
@@ -515,7 +516,7 @@ class PyFuturerestore:
         else:
             self.irecv = IRecv()
         self.device = Device(irecv=self.irecv, lockdown=self.lockdown_cli)
-        
+
     def download_buffer(self, url, pz_path):
         try:
             with RemoteZip(url) as z:
