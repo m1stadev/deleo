@@ -538,29 +538,29 @@ class PyFuturerestore:
         self.logger.info(f'Done reading signing ticket {path}')
 
     def load_latest_sep(self):
-        if not self.latest_bm:
-            self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
-            latest_url = self.get_latest_fwurl()
-            retassure(latest_url != -1, 'Could not get latest firmware URL')
-            self.latest_bm = self.download_buffer(latest_url, 'BuildManifest.plist')
-            retassure(self.latest_bm != -1, 'Could not download latest BuildManifest.plist')
-        self.ipsw.load_custom_manifest(self.latest_bm)
+        self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
+        retassure((latest_url := self.get_latest_fwurl()) != -1, 'Could not get latest firmware URL')
+        retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1,
+                  'Could not download latest BuildManifest.plist')
+        self.ipsw.load_custom_manifest(latest_bm)
         build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
-        latest_sepfw = build_identity.get_component('SEP')
+        sep_path = build_identity.get_component_path('SEP')
+        self.logger.info('Downloading SEP')
+        retassure((latest_sepfw := self.download_buffer(latest_url, sep_path)) != 1, 'Could not download SEP firmware')
         self.load_sep(latest_sepfw, self.latest_bm)
         self.logger.info('done loading latest SEP')
 
     def load_latest_baseband(self):
-        if not self.latest_bm:
-            self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
-            latest_url = self.get_latest_fwurl()
-            retassure(latest_url != -1, 'Could not get latest firmware URL')
-            self.latest_bm = self.download_buffer(latest_url, 'BuildManifest.plist')
-            retassure(self.latest_bm != -1, 'Could not download latest BuildManifest.plist')
-        self.ipsw.load_custom_manifest(self.latest_bm)
+        self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
+        latest_url = self.get_latest_fwurl()
+        retassure(latest_url != -1, 'Could not get latest firmware URL')
+        retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1, 'Could not download latest BuildManifest.plist')
+        self.ipsw.load_custom_manifest(latest_bm)
         build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
-        latest_bbfw = build_identity.get_component('BasebandFirmware')
-        self.load_sep(latest_bbfw, self.latest_bm)
+        bbfwpath = build_identity.get_component_path('BasebandFirmware')
+        self.logger.info('Downloading Baseband')
+        retassure((latest_bbfw := self.download_buffer(latest_url, bbfwpath)) != 1, 'Could not download Baseband firmware')
+        self.load_baseband(latest_bbfw, self.latest_bm)
         self.logger.info('done loading latest Baseband')
 
     def load_sep(self, data, bm):
