@@ -414,7 +414,7 @@ Mode.NORMAL_MODE = 0x12a8
 
 # ---------------------------------
 
-PYFUTURERESTORE_TEMP_PATH = '/tmp/pyfuturerestore'
+PYFUTURERESTORE_TEMP_PATH = '/tmp/pyfuturerestore/'
 def strmode(mode: Mode):
     if mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4):
         return 'Recovery'
