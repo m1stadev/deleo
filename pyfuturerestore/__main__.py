@@ -71,7 +71,7 @@ def _main():
         retassure(args.use_pwndfu, '--skip-blob requires --use-pwndfu')
 
     ipsw = ZipFile(args.ipsw[0])
-    client = PyFuturerestore(ipsw, setnonce=args.set_nonce, serial=args.serial, custom_gen=args.set_nonce[0] if args.set_nonce else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, verbose=args.debug)
+    client = PyFuturerestore(ipsw, logger, setnonce=args.set_nonce, serial=args.serial, custom_gen=args.set_nonce[0] if args.set_nonce else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, verbose=args.debug)
     client.init()
     logger.info('pyfuturerestore init done')
     if args.exit_recovery:

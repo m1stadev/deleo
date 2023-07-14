@@ -456,7 +456,7 @@ def _get_backend():  # Attempt to find a libusb 1.0 library to use as pyusb's ba
     return str(libusb1)
 
 class PyFuturerestore:
-    def __init__(self, ipsw: ZipFile, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, verbose=False):
+    def __init__(self, ipsw: ZipFile, logger, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, verbose=False):
         if not os.path.isdir(PYFUTURERESTORE_TEMP_PATH):
             os.makedirs(PYFUTURERESTORE_TEMP_PATH)
         self.no_cache = no_cache
@@ -473,7 +473,7 @@ class PyFuturerestore:
         self.tss = None
         self.ipsw: IPSW = IPSW(ipsw)
         self.verbose = verbose
-        self.logger = get_my_logger(self.verbose, name='pyfuturerestore')
+        self.logger = logger
         self.sepfw = None
         self.sepbm = None
         self.bbfw = None
