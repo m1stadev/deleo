@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pyipatcher = "^1.1.7"
+pyipatcher = "^2.0.1"
 pymobiledevice3 = "^2.0.2"
 pyimg4 = "^0.7"
 m1n1Exception = "^2.7"
@@ -21,7 +21,7 @@ pyusb = "^1.2.1"
 pyfuturerestore = "pyfuturerestore.__main__:main"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/Mini-Exploit/pyipatcher/issues"
+"Bug Tracker" = "https://github.com/Mini-Exploit/pyifuturerestore/issues"
 
 [build-system]
 requires = ["poetry-core"]

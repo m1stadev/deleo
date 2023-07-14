@@ -668,8 +668,8 @@ class PyFuturerestore:
         if (not cache1) and (not cache2):
             ipc = IPatcher(self.verbose)
             self.logger.info(f'Getting firmware keys for {self.irecv.hardware_model}')
-            retassure((ibss_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBSS')) == 0,  'Could not get iBSS keys')
-            retassure((ibec_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBEC')) == 0, 'Could not get iBEC keys')
+            retassure((ibss_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBSS')) != -1,  'Could not get iBSS keys')
+            retassure((ibec_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBEC')) != -1, 'Could not get iBEC keys')
             self.logger.info('Patching iBSS')
             _ibss = build_identity.get_component('iBSS')
             _ibss = ipc.patch_iboot(_ibss, bootargs, kbag=ibss_keys)
