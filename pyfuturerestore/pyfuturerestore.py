@@ -622,7 +622,7 @@ class PyFuturerestore:
         ap_nonce = binascii.hexlify(self.irecv.ap_nonce)
         return ap_nonce.decode()
 
-    def enter_pwnrecovery(self, bootargs=None):
+    def enter_pwnrecovery(self, build_identity, bootargs=None):
         cache1 = False
         cache2 = False
         try:
@@ -652,7 +652,6 @@ class PyFuturerestore:
             self.logger.info(f'Getting firmware keys for {self.irecv.hardware_model}')
             retassure((ibss_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBSS')) == 0,  'Could not get iBSS keys')
             retassure((ibec_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBEC')) == 0, 'Could not get iBEC keys')
-            build_identity = self.ipsw.build_manifest.get_build_identity(self.device.hardware_model)
             self.logger.info('Patching iBSS')
             _ibss = build_identity.get_component('iBSS')
             _ibss = ipc.patch_iboot(_ibss, bootargs, kbag=ibss_keys)
@@ -738,8 +737,7 @@ class PyFuturerestore:
     def do_restore(self):
         retassure(self.sepfw, 'SEP was not loaded')
         retassure(self.sepbm, 'SEP BuildManifest was not loaded')
-        # retassure(self.bbfw, 'Baseband was not loaded')
-        # retassure(self.bbbm, 'Baseband BuildManifest was not loaded')
+        restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw, bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
         self.enter_recovery()
         self.logger.info('Checking if the APTicket is valid for this restore')
         if not self.skip_blob:
@@ -757,11 +755,10 @@ class PyFuturerestore:
                 bootargs += 'rd=md0 '
                 # Currently pyfuturerestore does not support update install
                 bootargs += '-v -restore debug=0x2014e keepsyms=0x1 amfi=0xff amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1 cs_enforcement_disable=0x1'
-            self.enter_pwnrecovery(bootargs=bootargs)
+            self.enter_pwnrecovery(restore.build_identity ,bootargs=bootargs)
             self.init()
             self.logger.info('reinit done')
         self.logger.info('About to restore device')
-        restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw, bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
         self.logger.info('Booting ramdisk')
         restore.recovery.boot_ramdisk()
         self.logger.info('Starting restore')
