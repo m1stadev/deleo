@@ -556,6 +556,7 @@ class PyFuturerestore:
     def load_latest_sep(self):
         self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
         retassure((latest_url := self.get_latest_fwurl()) != -1, 'Could not get latest firmware URL')
+        self.logger.debug(f'Latest firmware URL: {latest_url}')
         retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1,
                   'Could not download latest BuildManifest.plist')
         self.ipsw.load_custom_manifest(latest_bm)
@@ -568,8 +569,8 @@ class PyFuturerestore:
 
     def load_latest_baseband(self):
         self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
-        latest_url = self.get_latest_fwurl()
-        retassure(latest_url != -1, 'Could not get latest firmware URL')
+        retassure((latest_url := self.get_latest_fwurl()) != -1, 'Could not get latest firmware URL')
+        self.logger.debug(f'Latest firmware URL: {latest_url}')
         retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1, 'Could not download latest BuildManifest.plist')
         self.ipsw.load_custom_manifest(latest_bm)
         build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
