@@ -511,7 +511,8 @@ class PyFuturerestore:
                             return mode
                     except ValueError:
                         pass
-            reterror(f'Could not get mode: {e}')
+            else:
+                reterror(f'Could not get mode: {e}')
 
     def init(self):
         self.lockdown_cli: LockdownClient = None
