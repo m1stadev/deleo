@@ -33,6 +33,7 @@ def _main():
     parser.add_argument('-p','--baseband-manifest',metavar='PATH',nargs=1,help='BuildManifest for requesting baseband ticket')
     parser.add_argument('--no-baseband',help='Skip checks and don\'t flash baseband',action='store_true')
     parser.add_argument('-d', '--debug',help='More debug information during restore',action='store_true')
+    parser.add_argument('--usb-backend',metavar='PATH',help='Customize USB backend for use',nargs=1)
     parser.add_argument('ipsw',metavar='iPSW',nargs=1)
     args = parser.parse_args()
     logger = get_my_logger(args.debug, name='pyfuturerestore')
@@ -71,7 +72,7 @@ def _main():
         retassure(args.use_pwndfu, '--skip-blob requires --use-pwndfu')
 
     ipsw = ZipFile(args.ipsw[0])
-    client = PyFuturerestore(ipsw, logger, setnonce=args.set_nonce, serial=args.serial, custom_gen=args.set_nonce[0] if args.set_nonce else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, verbose=args.debug)
+    client = PyFuturerestore(ipsw, logger, setnonce=args.set_nonce, serial=args.serial, custom_gen=args.set_nonce[0] if args.set_nonce else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, verbose=args.debug)
     client.init()
     logger.info('pyfuturerestore init done')
     if args.exit_recovery:

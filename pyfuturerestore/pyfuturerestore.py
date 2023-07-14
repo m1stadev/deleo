@@ -456,7 +456,7 @@ def _get_backend():  # Attempt to find a libusb 1.0 library to use as pyusb's ba
     return str(libusb1)
 
 class PyFuturerestore:
-    def __init__(self, ipsw: ZipFile, logger, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, verbose=False):
+    def __init__(self, ipsw: ZipFile, logger, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, custom_usb_backend=None, verbose=False):
         if not os.path.isdir(PYFUTURERESTORE_TEMP_PATH):
             os.makedirs(PYFUTURERESTORE_TEMP_PATH)
         self.no_cache = no_cache
@@ -464,6 +464,7 @@ class PyFuturerestore:
         self._bootargs = None
         self.ramdiskdata = None
         self.rkrndata = None
+        self.usb_backend = custom_usb_backend
         self.zipipsw = ipsw
         self.skip_blob = skip_blob
         self.setnonce = setnonce
@@ -482,7 +483,10 @@ class PyFuturerestore:
         self.noibss = noibss
 
     def pyfuturerestore_get_mode(self):
-        retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
+        if self.usb_backend:
+            backend = self.usb_backend
+        else:
+            retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
         self.logger.debug(f'USB backend: {backend}')
         try:
             for device in find(find_all=True, backend=get_backend(find_library=lambda _: backend)):
@@ -586,6 +590,7 @@ class PyFuturerestore:
         self.logger.warning('Custom RestoreKernelCache won\'t be verified')
         with open(path, 'rb') as f:
             self.rkrndata = f.read()
+
     def enter_recovery(self):
         self.logger.info('Entering Recovery Mode')
         if self.init_mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4):
