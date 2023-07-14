@@ -662,13 +662,13 @@ class PyFuturerestore:
                     _ibss = f.read()
                 cache1 = True
             except:
-                pass
+                cache1 = False
             try:
                 with open(ibec_name, 'rb') as f:
                     _ibec = f.read()
                 cache2 = True
             except:
-                pass
+                cache2 = False
 
         if (not cache1) and (not cache2):
             ipc = IPatcher(self.verbose)
