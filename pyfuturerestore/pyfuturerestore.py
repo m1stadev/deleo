@@ -515,6 +515,7 @@ class PyFuturerestore:
         else:
             self.irecv = IRecv()
         self.device = Device(irecv=self.irecv, lockdown=self.lockdown_cli)
+        
     def download_buffer(self, url, pz_path):
         try:
             with RemoteZip(url) as z:
