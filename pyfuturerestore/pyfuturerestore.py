@@ -483,11 +483,6 @@ class PyFuturerestore:
         self.noibss = noibss
 
     def pyfuturerestore_get_mode(self):
-        if self.usb_backend:
-            backend = self.usb_backend
-        else:
-            retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
-        self.logger.debug(f'USB backend: {backend}')
         try:
             for device in find(find_all=True):
                 try:
@@ -501,6 +496,11 @@ class PyFuturerestore:
                     pass
         except Exception as e:
             if 'No backend avaialble' in str(e):
+                if self.usb_backend:
+                    backend = self.usb_backend
+                else:
+                    retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
+                self.logger.debug(f'USB backend: {backend}')
                 for device in find(find_all=True, backend=get_backend(find_library=lambda _: backend)):
                     try:
                         if device.idVendor is None:
