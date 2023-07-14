@@ -691,7 +691,7 @@ class PyFuturerestore:
         if not self.noibss:
             self.logger.info('Sending iBSS')
             self.irecv.send_buffer(_ibss)
-            self.logger.info('waitng for reconnect in Recovery mode')
+            self.logger.info('waitng for reconnect')
             self.reconnect_irecv()
         if (0x7000 <= self.irecv.chip_id <= 0x8004) or (0x8900 <= self.irecv.chip_id <= 0x8965):
             retassure(self.init_mode == Mode.DFU_MODE, 'Unable to connect to device in DFU mode')
