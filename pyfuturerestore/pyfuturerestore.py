@@ -480,7 +480,6 @@ class PyFuturerestore:
         self.bbbm = None
         self.has_get_latest_fwurl = False
         self.noibss = noibss
-        self.latest_bm = None
 
     def pyfuturerestore_get_mode(self):
         retassure((backend := _get_backend()) != -1, 'Could not find backend for libusb')
@@ -547,7 +546,7 @@ class PyFuturerestore:
         sep_path = build_identity.get_component_path('SEP')
         self.logger.info('Downloading SEP')
         retassure((latest_sepfw := self.download_buffer(latest_url, sep_path)) != 1, 'Could not download SEP firmware')
-        self.load_sep(latest_sepfw, self.latest_bm)
+        self.load_sep(latest_sepfw, latest_bm)
         self.logger.info('done loading latest SEP')
 
     def load_latest_baseband(self):
@@ -560,7 +559,7 @@ class PyFuturerestore:
         bbfwpath = build_identity.get_component_path('BasebandFirmware')
         self.logger.info('Downloading Baseband')
         retassure((latest_bbfw := self.download_buffer(latest_url, bbfwpath)) != 1, 'Could not download Baseband firmware')
-        self.load_baseband(latest_bbfw, self.latest_bm)
+        self.load_baseband(latest_bbfw, latest_bm)
         self.logger.info('done loading latest Baseband')
 
     def load_sep(self, data, bm):
