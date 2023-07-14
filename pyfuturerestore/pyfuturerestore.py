@@ -495,7 +495,7 @@ class PyFuturerestore:
                 except ValueError:
                     pass
         except Exception as e:
-            if 'No backend avaialble' in str(e):
+            if 'No backend available' in str(e):
                 if self.usb_backend:
                     backend = self.usb_backend
                 else:
