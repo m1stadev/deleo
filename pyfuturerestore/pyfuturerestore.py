@@ -482,6 +482,11 @@ class PyFuturerestore:
         self.has_get_latest_fwurl = False
         self.noibss = noibss
 
+    def reconnect_irecv(self, is_recovery=None):
+        self.logger.debug('waiting for device to reconnect...')
+        self.irecv = IRecv(ecid=self.device.ecid, is_recovery=is_recovery)
+        self.logger.debug(f'connected mode: {self.device.irecv.mode}')
+
     def pyfuturerestore_get_mode(self):
         try:
             for device in find(find_all=True):
@@ -686,16 +691,16 @@ class PyFuturerestore:
         if not self.noibss:
             self.logger.info('Sending iBSS')
             self.irecv.send_buffer(_ibss)
-            self.init()
-            self.logger.info('reinit done')
+            self.logger.info('waitng for reconnect in Recovery mode')
+            self.reconnect_irecv()
         if (0x7000 <= self.irecv.chip_id <= 0x8004) or (0x8900 <= self.irecv.chip_id <= 0x8965):
             retassure(self.init_mode == Mode.DFU_MODE, 'Unable to connect to device in DFU mode')
             if self.ipsw.build_manifest.build_major > 8:
                 self.irecv.set_configuration(1)
                 self.logger.info('Sending iBEC')
                 self.irecv.send_buffer(_ibec)
-                self.init()
-                self.logger.info('reinit done')
+                self.logger.info('waiting for reconnect in Recovery mode')
+                self.reconnect_irecv(is_recovery=True)
                 retassure(self.init_mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode')
         elif (0x8006 <= self.irecv.chip_id <= 0x8030) or (0x8101 <= self.irecv.chip_id <= 0x8301):
             dfu = True
@@ -710,8 +715,8 @@ class PyFuturerestore:
                 sleep(2)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
-            self.init()
-            self.logger.info('reinit done')
+            self.logger.info('waiting for reconnect in Recovery mode')
+            self.reconnect_irecv(is_recovery=True)
         self.logger.info(f'ApNonce pre-hax: {self.get_hex_ap_nonce()}')
         generator = self.custom_gen if self.custom_gen is not None else self.get_generator_from_shsh2()
         if self.custom_gen is not None:
@@ -720,14 +725,17 @@ class PyFuturerestore:
             self.logger.info(f'generator={generator}, writing to nvram')
             self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
             self.irecv.send_command('saveenv')
-            self.init()
-            self.logger.info('reinit done')
+            self.logger.info('waiting for reconnect in Recovery mode')
+            self.reconnect_irecv(is_recovery=True)
             self.irecv.set_configuration(1)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
-            self.irecv.send_command('go')
-            self.init()
-            self.logger.info('reinit done')
+            try:
+                self.irecv.send_command('go')
+            except:
+                pass
+            self.logger.info('waiting for reconnect in Recovery mode')
+            self.reconnect_irecv(is_recovery=True)
             retassure(self.init_mode in (
             Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode')
             self.logger.info(f'ApNonce post-hax:\n {self.get_hex_ap_nonce()}')
@@ -739,8 +747,8 @@ class PyFuturerestore:
             self.irecv.set_configuration(1)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
-            self.init()
-            self.logger.info('reinit done')
+            self.logger.info('waiting for reconnect in Recovery mode')
+            self.reconnect_irecv(is_recovery=True)
             retassure(self.init_mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode after ApNonce hax')
             self.irecv.send_buffer('bgcolor 255 255 0')
             self.logger.info('APNonce from device already matches IM4M nonce, no need for extra hax...')
@@ -775,8 +783,8 @@ class PyFuturerestore:
                 # Currently pyfuturerestore does not support update install
                 bootargs += '-v -restore debug=0x2014e keepsyms=0x1 amfi=0xff amfi_allow_any_signature=0x1 amfi_get_out_of_my_way=0x1 cs_enforcement_disable=0x1'
             self.enter_pwnrecovery(restore.build_identity ,bootargs=bootargs)
-            self.init()
-            self.logger.info('reinit done')
+            self.logger.info('waiting for reconnect in Recovery mode')
+            self.reconnect_irecv(is_recovery=True)
         self.logger.info('About to restore device')
         self.logger.info('Booting ramdisk')
         restore.recovery.boot_ramdisk()
