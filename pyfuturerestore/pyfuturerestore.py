@@ -671,14 +671,15 @@ class PyFuturerestore:
             retassure((ibss_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBSS')) != -1,  'Could not get iBSS keys')
             retassure((ibec_keys := ipc.get_keys(self.irecv.product_type, self.ipsw.build_manifest.product_build_version, 'iBEC')) != -1, 'Could not get iBEC keys')
             self.logger.info('Patching iBSS')
-            _ibss = build_identity.get_component('iBSS')
-            _ibss = ipc.patch_iboot(_ibss, bootargs, kbag=ibss_keys)
+            _ibss = build_identity.get_component('iBSS').data
+            retassure((_ibss := ipc.patch_iboot(_ibss, bootargs, kbag=ibss_keys)) != -1, 'Failed to patch iBSS')
+            retassure((_ibss := ipc.pack_into_img4(_ibss, self.im4m)) != -1, 'Failed to repack iBSS')
             with open(ibss_name, 'wb') as f:
                 f.write(_ibss)
             self.logger.info('Patching iBEC')
-            _ibec = build_identity.get_component('iBEC')
-            _ibec = ipc.patch_iboot(_ibec, bootargs, kbag=ibec_keys)
-            _ibec = ipc.pack_into_img4(_ibec, self.im4m)
+            _ibec = build_identity.get_component('iBEC').data
+            retassure((_ibec := ipc.patch_iboot(_ibec, bootargs, kbag=ibec_keys)) != -1, 'Failed to patch iBEC')
+            retassure((_ibec := ipc.pack_into_img4(_ibec, self.im4m)) != -1, 'Failed to repack iBEC')
             with open(ibec_name, 'wb') as f:
                 f.write(_ibec)
         dfu = False
