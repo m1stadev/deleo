@@ -701,12 +701,9 @@ class PyFuturerestore:
                 self.irecv.send_buffer(_ibec)
                 self.logger.info('waiting for reconnect in Recovery mode')
                 self.reconnect_irecv(is_recovery=True)
-                retassure(self.init_mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode')
         elif (0x8006 <= self.irecv.chip_id <= 0x8030) or (0x8101 <= self.irecv.chip_id <= 0x8301):
             dfu = True
-            retassure(self.init_mode in (
-            Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4),
-                      'Device did not reconnect. Possibly invalid iBSS. Reset device and try again')
+            self.reconnect_irecv(is_recovery=True)
         else:
             reterror('Device not supported!')
         if self.irecv.is_image4_supported:
@@ -736,8 +733,6 @@ class PyFuturerestore:
                 pass
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
-            retassure(self.init_mode in (
-            Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode')
             self.logger.info(f'ApNonce post-hax:\n {self.get_hex_ap_nonce()}')
             self.irecv.send_command('bgcolor 255 255 0')
             retassure(self.get_hex_ap_nonce() == self.get_ap_nonce_from_im4m() or self.ignore_nonce_matching or self.setnonce, 'ApNonce from device doesn\'t match IM4M nonce after applying ApNonce hax. Aborting!')
@@ -749,7 +744,6 @@ class PyFuturerestore:
             self.irecv.send_buffer(_ibec)
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
-            retassure(self.init_mode in (Mode.RECOVERY_MODE_1, Mode.RECOVERY_MODE_2, Mode.RECOVERY_MODE_3, Mode.RECOVERY_MODE_4), 'Unable to connect to device in Recovery mode after ApNonce hax')
             self.irecv.send_buffer('bgcolor 255 255 0')
             self.logger.info('APNonce from device already matches IM4M nonce, no need for extra hax...')
         self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
