@@ -716,8 +716,8 @@ class PyFuturerestore:
             self.reconnect_irecv(is_recovery=True)
         self.logger.info(f'ApNonce pre-hax:\n {self.get_hex_ap_nonce()}')
         generator = self.custom_gen if self.custom_gen is not None else self.get_generator_from_shsh2()
-        if self.custom_gen is not None:
-            if (not self.custom_gen) and self.setnonce:
+        if self.custom_gen is not None and self.setnonce:
+            if not self.setnonce:
                 self.logger.info('ApNonce from device doesn\'t match IM4M nonce, applying hax')
             self.logger.info(f'generator={generator}, writing to nvram')
             self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
