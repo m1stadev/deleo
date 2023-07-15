@@ -744,7 +744,10 @@ class PyFuturerestore:
             self.irecv.set_configuration(1)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
-            self.irecv.send_command('go')
+            try:
+                self.irecv.send_command('go')
+            except USBError:
+                pass
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
             self.irecv.send_command('bgcolor 255 255 0')
