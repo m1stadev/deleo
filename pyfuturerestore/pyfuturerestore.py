@@ -758,7 +758,7 @@ class PyFuturerestore:
         self.irecv.send_command('saveenv')
         if self.setnonce:
             self.logger.info('Done setting nonce!')
-            self.logger.info('Use futurerestore --exit-recovery to go back to normal mode if you aren\'t restoring.')
+            self.logger.info('Use pyfuturerestore --exit-recovery to go back to normal mode if you aren\'t restoring.')
             self.irecv.set_autoboot(False)
             self.irecv.reboot()
             sys.exit(0)
