@@ -739,12 +739,15 @@ class PyFuturerestore:
             if self.ignore_nonce_matching:
                 self.logger.warning('IGNORING SETTING NONCE FAILURE! RESTORE MAY FAIL!')
         else:
+            sleep(5)
+            self.irecv.reset()
             self.irecv.set_configuration(1)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
+            self.irecv.send_command('go')
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
-            self.irecv.send_buffer('bgcolor 255 255 0')
+            self.irecv.send_command('bgcolor 255 255 0')
             self.logger.info('APNonce from device already matches IM4M nonce, no need for extra hax...')
         self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
         self.irecv.send_command('saveenv')
