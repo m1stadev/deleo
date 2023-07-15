@@ -485,7 +485,7 @@ class PyFuturerestore:
     def reconnect_irecv(self, is_recovery=None):
         self.logger.debug('waiting for device to reconnect...')
         self.irecv = IRecv(ecid=self.device.ecid, is_recovery=is_recovery)
-        self.logger.debug(f'connected mode: {self.device.irecv.mode}')
+        self.logger.debug(f'connected mode: {self.irecv.mode}')
 
     def pyfuturerestore_get_mode(self):
         try:
@@ -714,7 +714,7 @@ class PyFuturerestore:
             self.irecv.send_buffer(_ibec)
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
-        self.logger.info(f'ApNonce pre-hax: {self.get_hex_ap_nonce()}')
+        self.logger.info(f'ApNonce pre-hax:\n {self.get_hex_ap_nonce()}')
         generator = self.custom_gen if self.custom_gen is not None else self.get_generator_from_shsh2()
         if self.custom_gen is not None:
             if (not self.custom_gen) and self.setnonce:
