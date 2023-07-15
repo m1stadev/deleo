@@ -694,7 +694,7 @@ class PyFuturerestore:
             self.logger.info('waitng for reconnect')
             self.reconnect_irecv()
         if (0x7000 <= self.irecv.chip_id <= 0x8004) or (0x8900 <= self.irecv.chip_id <= 0x8965):
-            retassure(self.init_mode == Mode.DFU_MODE, 'Unable to connect to device in DFU mode')
+            retassure(self.device.irecv.mode == Mode.DFU_MODE, 'Unable to connect to device in DFU mode')
             if self.ipsw.build_manifest.build_major > 8:
                 self.irecv.set_configuration(1)
                 self.logger.info('Sending iBEC')
