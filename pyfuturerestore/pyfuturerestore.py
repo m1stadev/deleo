@@ -468,7 +468,6 @@ class PyFuturerestore:
         self.zipipsw = ipsw
         self.skip_blob = skip_blob
         self.setnonce = setnonce
-        print(f'self.setnonce: {self.setnonce}')
         self.ignore_nonce_matching = ignore_nonce_matching
         self.pwndfu = pwndfu
         self.custom_gen = custom_gen
