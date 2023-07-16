@@ -7,6 +7,10 @@ from time import sleep
 
 set_package_name('pyfuturerestore')
 
+class blank:
+    def __init__(self):
+        pass
+
 def _main():
     parser = argparse.ArgumentParser(description='pyfuturerestore - A re-implementation of futurerestore in Python', usage='pyfuturerestore [OPTIONS] IPSW')
     parser.add_argument('-t','--apticket',metavar='PATH',nargs=1,help='Signing tickets used for restoring')
@@ -19,7 +23,7 @@ def _main():
                         help='Set custom restore ramdisk for entering restore mode (requires use-pwndfu)')
     parser.add_argument('--rkrn', metavar='PATH', nargs=1,
                         help='Set custom restore kernelcache for entering restore mode (requires use-pwndfu)')
-    parser.add_argument('--set-nonce',metavar='NONCE',help='Set custom nonce from your blob then exit recovery (set nonce from your blob if no nonce is provided) (requires use-pwndfu)',nargs='?',const=True)
+    parser.add_argument('--set-nonce',metavar='NONCE',help='Set custom nonce from your blob then exit recovery (set nonce from your blob if no nonce is provided) (requires use-pwndfu)',nargs='?',const=blank())
     parser.add_argument('--ignore-nonce-matching',help='Ignore device\'s post-hax ApNonce being unmatched with blob\'s ApNonce (PROCEED WITH CAUTION) (requires use-pwndfu)',action='store_true')
     parser.add_argument('--serial',help='Enable serial during boot (requires serial cable and use-pwndfu)',action='store_true')
     parser.add_argument('--boot-args',metavar='BOOTARGS',nargs=1,help='Set custom restore boot-args (PROCEED WITH CAUTION) (requires use-pwndfu)')
@@ -72,7 +76,7 @@ def _main():
         retassure(args.use_pwndfu, '--skip-blob requires --use-pwndfu')
 
     ipsw = ZipFile(args.ipsw[0])
-    client = PyFuturerestore(ipsw, logger, setnonce=args.set_nonce, serial=args.serial, custom_gen=args.set_nonce[0] if args.set_nonce else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, no_cache=args.no_cache, verbose=args.debug)
+    client = PyFuturerestore(ipsw, logger, setnonce=isinstance(args.set_nonce, blank), serial=args.serial, custom_gen=args.set_nonce[0] if (not isinstance(args.set_nonce, blank)) else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, no_cache=args.no_cache, verbose=args.debug)
     client.init()
     logger.info('pyfuturerestore init done')
     if args.exit_recovery:
