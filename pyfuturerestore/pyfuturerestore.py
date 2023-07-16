@@ -468,6 +468,7 @@ class PyFuturerestore:
         self.zipipsw = ipsw
         self.skip_blob = skip_blob
         self.setnonce = setnonce
+        print(f'self.setnonce: {self.setnonce}')
         self.ignore_nonce_matching = ignore_nonce_matching
         self.pwndfu = pwndfu
         self.custom_gen = custom_gen
@@ -624,9 +625,7 @@ class PyFuturerestore:
         else:
             reterror('Device is in unsupported mode')
         self.logger.info('Waiting for device to enter Recovery Mode')
-        self.init()
-        self.logger.info('reinit done')
-        self.logger.info('done entering Recovery Mode')
+        self.reconnect_irecv(is_recovery=True)
 
     def exit_recovery(self):
         retassure(self.irecv or self.initMode in (
@@ -715,13 +714,14 @@ class PyFuturerestore:
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
         self.logger.info(f'ApNonce pre-hax:\n {self.get_hex_ap_nonce()}')
-        generator = self.custom_gen if self.custom_gen is not None else self.get_generator_from_shsh2()
-        if self.custom_gen is not None and self.setnonce:
+        generator = self.custom_gen if self.custom_gen else self.get_generator_from_shsh2()
+        self.logger.info(f'generator={generator}')
+        if (not self.custom_gen) and self.setnonce:
             if not self.setnonce:
                 self.logger.info('ApNonce from device doesn\'t match IM4M nonce, applying hax')
             self.logger.info(f'generator={generator}, writing to nvram')
-            self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
-            self.irecv.send_command('saveenv')
+            self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}', b_request=0)
+            self.irecv.send_command('saveenv', b_request=0)
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
             self.irecv.set_configuration(1)
@@ -753,9 +753,11 @@ class PyFuturerestore:
             self.irecv.send_command('bgcolor 255 255 0')
             self.logger.info('APNonce from device already matches IM4M nonce, no need for extra hax...')
             sleep(2)
+        self.irecv._device.set_interface_altsetting(0, 0)
+        self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}', b_request=0)
+        self.irecv.send_command('saveenv', b_request=0)
         self.irecv.reset()
-        self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}')
-        self.irecv.send_command('saveenv')
+
         if self.setnonce:
             self.logger.info('Done setting nonce!')
             self.logger.info('Use pyfuturerestore --exit-recovery to go back to normal mode if you aren\'t restoring.')
@@ -789,6 +791,7 @@ class PyFuturerestore:
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
         self.logger.info('About to restore device')
+        restore.recovery.device = Device(irecv=self.irecv)
         self.logger.info('Booting ramdisk')
         restore.recovery.boot_ramdisk()
         self.logger.info('Starting restore')
