@@ -74,9 +74,10 @@ def _main():
         retassure(args.use_pwndfu, '--no-cache requires --use-pwndfu')
     if args.skip_blob:
         retassure(args.use_pwndfu, '--skip-blob requires --use-pwndfu')
-
+    if not args.set_nonce:
+        args.set_nonce = blank()
     ipsw = ZipFile(args.ipsw[0])
-    client = PyFuturerestore(ipsw, logger, setnonce=isinstance(args.set_nonce, blank), serial=args.serial, custom_gen=args.set_nonce[0] if (not isinstance(args.set_nonce, blank)) else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, no_cache=args.no_cache, verbose=args.debug)
+    client = PyFuturerestore(ipsw, logger, setnonce=isinstance(args.set_nonce, blank), serial=args.serial, custom_gen=args.set_nonce[0] if not isinstance(args.set_nonce, blank) else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, no_cache=args.no_cache, verbose=args.debug)
     client.init()
     logger.info('pyfuturerestore init done')
     if args.exit_recovery:
