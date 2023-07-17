@@ -113,7 +113,8 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
 
 BaseRestore.__init__ = BaseRestore__init__
 
-def Recovery__init__(self, ipsw: BytesIO, device: Device, tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
+def Recovery__init__(self, ipsw: BytesIO, device: Device,
+                     tss: typing.Mapping = None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update):
     BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, sepbm=sepbm, bbfw=bbfw, bbbm=bbbm, behavior=behavior,
                      logger=logging.getLogger(__name__))
     self.tss_localpolicy = None
@@ -407,8 +408,84 @@ def send_baseband_data(self, message: typing.Mapping):
     self.logger.info('Sending BasebandData now...')
     self._restored.send({'BasebandData': buffer})
 
+def send_nor(self, message: Mapping):
+    self.logger.info('About to send NORData...')
+    flash_version_1 = False
+    llb_path = self.build_identity.get_component('LLB', tss=self.recovery.tss).path
+    llb_filename_offset = llb_path.find('LLB')
+
+    arguments = message.get('Arguments')
+    if arguments:
+        flash_version_1 = arguments.get('FlashVersion1', False)
+
+    if llb_filename_offset == -1:
+        raise PyMobileDevice3Exception('Unable to extract firmware path from LLB filename')
+
+    firmware_path = llb_path[:llb_filename_offset - 1]
+    self.logger.info(f'Found firmware path: {firmware_path}')
+
+    firmware_files = dict()
+    try:
+        firmware = self.ipsw.get_firmware(firmware_path)
+        firmware_files = firmware.get_files()
+    except KeyError:
+        self.logger.info('Getting firmware manifest from build identity')
+        build_id_manifest = self.build_identity['Manifest']
+        for component, manifest_entry in build_id_manifest.items():
+            if isinstance(manifest_entry, dict):
+                is_fw = plist_access_path(manifest_entry, ('Info', 'IsFirmwarePayload'), bool)
+                loaded_by_iboot = plist_access_path(manifest_entry, ('Info', 'IsLoadedByiBoot'), bool)
+                is_secondary_fw = plist_access_path(manifest_entry, ('Info', 'IsSecondaryFirmwarePayload'), bool)
+
+                if is_fw or (is_secondary_fw and loaded_by_iboot):
+                    comp_path = plist_access_path(manifest_entry, ('Info', 'Path'))
+                    if comp_path:
+                        firmware_files[component] = comp_path
+
+    if not firmware_files:
+        raise PyMobileDevice3Exception('Unable to get list of firmware files.')
+
+    component = 'LLB'
+    llb_data = self.build_identity.get_component(component, tss=self.recovery.tss,
+                                                 path=llb_path).personalized_data
+    req = {'LlbImageData': llb_data}
+
+    if flash_version_1:
+        norimage = {}
+    else:
+        norimage = []
+
+    for component, comppath in firmware_files.items():
+        if component in ('LLB', 'RestoreSEP'):
+            # skip LLB, it's already passed in LlbImageData
+            # skip RestoreSEP, it's passed in RestoreSEPImageData
+            continue
+
+        nor_data = self.build_identity.get_component(component, tss=self.recovery.tss,
+                                                     path=comppath).personalized_data
+
+        if flash_version_1:
+            norimage[component] = nor_data
+        else:
+            # make sure iBoot is the first entry in the array
+            if component.startswith('iBoot'):
+                norimage = [nor_data] + norimage
+            else:
+                norimage.append(nor_data)
+
+    req['NorImageData'] = norimage
+
+    for component in ('RestoreSEP', 'SEP'):
+        comp = self.sep_build_identity.get_component(component, tss=self.recovery.tss, data=self.sepfw)
+        if comp.path:
+            req[f'{component}ImageData'] = comp.personalized_data
+
+    self.logger.info('Sending NORData now...')
+    self._restored.send(req)
+
 Restore.__init__ = Restore__init__
 Restore.send_baseband_data = send_baseband_data
+Restore.send_nor = send_nor
 
 Mode.NORMAL_MODE = 0x12a8
 
