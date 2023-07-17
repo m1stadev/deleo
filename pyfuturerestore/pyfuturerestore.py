@@ -722,8 +722,9 @@ class PyFuturerestore:
             self.irecv.send_command(f'setenv com.apple.System.boot-nonce {generator}', b_request=0)
             self.irecv.send_command('saveenv', b_request=0)
             self.logger.info('waiting for reconnect in Recovery mode')
-            #self.reconnect_irecv(is_recovery=True)
-            #self.irecv.set_configuration(1)
+            self.reconnect_irecv(is_recovery=True)
+            self.irecv.reset()
+            self.irecv.set_configuration(1)
             self.logger.info('Sending iBEC')
             self.irecv.send_buffer(_ibec)
             try:
