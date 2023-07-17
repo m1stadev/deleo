@@ -868,12 +868,12 @@ class PyFuturerestore:
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
         self.logger.info('About to restore device')
-        restore.recovery.device = Device(irecv=self.irecv)
-        self.logger.info('Booting ramdisk')
-        restore.recovery.boot_ramdisk()
         # reinit restore
         restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
                           bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
+        restore.recovery.device = Device(irecv=self.irecv)
+        self.logger.info('Booting ramdisk')
+        restore.recovery.boot_ramdisk()
         self.logger.info('Starting restore')
         restore.restore_device()
 
