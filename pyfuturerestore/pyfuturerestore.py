@@ -1153,6 +1153,7 @@ class PyFuturerestore:
             self.reconnect_irecv(is_recovery=True)
         self.logger.info('About to restore device')
         # reinit restore
+        self.reconnect_irecv()
         restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
                           bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
         restore.recovery.device = Device(irecv=self.irecv)
