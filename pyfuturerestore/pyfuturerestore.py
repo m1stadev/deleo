@@ -858,7 +858,7 @@ class PyFuturerestore:
             self.logger.info('Downloading Rose firmware')
             retassure((latest_rosefw := self.download_buffer(latest_url, rose_path)) != -1, 'Could not download Rose firmware')
             self.fwcomps['RoseFW'] = latest_rosefw
-        except:
+        except KeyError:
             self.logger.info('Rose firmware does not exist for this device, skipping')
 
     def load_latest_se(self):
@@ -870,7 +870,7 @@ class PyFuturerestore:
             self.logger.info('Downloading SE firmware')
             retassure((latest_sefw := self.download_buffer(latest_url, se_path)) != -1, 'Could not download SE firmware')
             self.fwcomps['SEFW'] = latest_sefw
-        except:
+        except KeyError:
             self.logger.info('Rose firmware does not exist for this device, skipping')
 
     def load_latest_savages(self):
@@ -907,7 +907,7 @@ class PyFuturerestore:
             retassure((fw6 := self.download_buffer(latest_url, savageBADevPath)) != -1,
                       'Could not download Savage,BA-Dev-Patch')
             self.fwcomps['SavageFW']['Savage,BA-Dev-Patch'] = fw6
-        except:
+        except KeyError:
             self.logger.info('Savage firmwares do not exist for this device, skipping')
 
     def load_latest_veridian(self):
@@ -924,7 +924,7 @@ class PyFuturerestore:
             retassure((veridianFWM_fw := self.download_buffer(latest_url, veridianFWM_path)) != -1,
                       'Could not download Veridian FirmwareMap')
             self.fwcomps['VeridianFWM'] = veridianFWM_fw
-        except:
+        except KeyError:
             self.logger.info('Veridian firmwares do not exist for this device, skipping')
 
     def load_latest_sep(self):
