@@ -74,11 +74,13 @@ def BaseRestore__init__(self, ipsw: ZipFile, device: Device, tss: typing.Mapping
     }[behavior]
 
     if sepbm:
+        self.logger.info('Getting custom SEP BuildIdentity')
         self.ipsw.load_custom_manifest(sepbm)
         self.sep_build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model,
                                                                                restore_behavior=behavior.value,
                                                                                variant=variant)
     if bbbm:
+        self.logger.info('Getting custom Baseband BuildIdentity')
         self.ipsw.load_custom_manifest(bbbm)
         self.baseband_build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model,
                                                                                     restore_behavior=behavior.value,
