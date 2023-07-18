@@ -117,6 +117,8 @@ def _main():
         client.load_rkrn(args.rkrn[0])
     if args.boot_args:
         client.set_bootargs(args.boot_args[0])
+    if client.irecv.is_image4_supported:
+        client.download_latest_fw_components()
 
     try:
         client.do_restore()

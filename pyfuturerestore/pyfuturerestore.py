@@ -2,7 +2,7 @@ import binascii
 from usb import USBError
 import pyimg4
 from pymobiledevice3.restore.restore import Restore
-from pyipatcher.logger import get_my_logger
+import struct
 from pyipatcher.ipatcher import IPatcher
 import logging
 from pathlib import Path
@@ -266,13 +266,14 @@ Recovery.send_kernelcache = send_kernelcache
 Recovery.send_component = send_component
 
 
-def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, behavior: Behavior = Behavior.Update,
+def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw=None, sepbm=None, bbfw=None, bbbm=None, rdskdata=None, rkrndata=None, fwcomps: dict = None, behavior: Behavior = Behavior.Update,
              ignore_fdr=False):
     BaseRestore.__init__(self, ipsw, device, tss, sepfw=sepfw, bbfw=bbfw, sepbm=sepbm, bbbm=bbbm, behavior=behavior, logger=logging.getLogger(__name__))
     self.recovery = Recovery(ipsw, device, tss=tss, rdskdata=rdskdata, rkrndata=rkrndata, behavior=behavior)
     self.bbtss: Optional[TSSResponse] = None
     self._restored: Optional[RestoredClient] = None
     self._restore_finished = False
+    self.fwcomps = fwcomps
 
     # used when ignore_fdr=True, to store an active FDR connection just to make the device believe it can actually
     # perform an FDR communication, but without really establishing any
@@ -483,9 +484,189 @@ def send_nor(self, message: Mapping):
     self.logger.info('Sending NORData now...')
     self._restored.send(req)
 
+def get_savage_firmware_data(self, info: Mapping):
+    # create Savage request
+    request = TSSRequest()
+    parameters = dict()
+
+    # add manifest for current build_identity to parameters
+    self.build_identity.populate_tss_request_parameters(parameters)
+
+    # add Savage,* tags from info dictionary to parameters
+    parameters.update(info)
+
+    # add required tags for Savage TSS request
+    comp_name = request.add_savage_tags(parameters, None)
+
+    if comp_name is None:
+        raise PyMobileDevice3Exception('Could not determine Savage firmware component')
+
+    self.logger.debug(f'restore_get_savage_firmware_data: using {comp_name}')
+
+    self.logger.info('Sending SE Savage request...')
+    response = request.send_receive()
+
+    if 'Savage,Ticket' in response:
+        self.logger.info('Received SE ticket')
+    else:
+        raise PyMobileDevice3Exception('No \'Savage,Ticket\' in TSS response, this might not work')
+
+    # now get actual component data
+    component_data = self.build_identity.get_component(comp_name).data if not self.fwcomps['SavageFW'][comp_name] else self.fwcomps['SavageFW'][comp_name]
+    component_data = struct.pack('<L', len(component_data)) + b'\x00' * 12
+
+    response['FirmwareData'] = component_data
+
+    return response
+
+def get_rose_firmware_data(self, info: Mapping):
+    self.logger.info(f'get_rose_firmware_data: {info}')
+
+    # create Rose request
+    request = TSSRequest()
+    parameters = dict()
+
+    # add manifest for current build_identity to parameters
+    # if self.fwcomps['RoseFW']:
+    #     self.sep_build_identity.populate_tss_request_parameters(parameters)
+    # else:
+    self.build_identity.populate_tss_request_parameters(parameters)
+
+    parameters['ApProductionMode'] = True
+
+    if self.device.is_image4_supported:
+        parameters['ApSecurityMode'] = True
+        parameters['ApSupportsImg4'] = True
+    else:
+        parameters['ApSupportsImg4'] = False
+
+    # add Rap,* tags from info dictionary to parameters
+    parameters.update(info)
+
+    # add required tags for Rose TSS request
+    request.add_rose_tags(parameters, None)
+
+    self.logger.info('Sending Rose TSS request...')
+    response = request.send_receive()
+
+    rose_ticket = response.get('Rap,Ticket')
+    if rose_ticket is None:
+        self.logger.error('No "Rap,Ticket" in TSS response, this might not work')
+
+    comp_name = 'Rap,RTKitOS'
+    component_data = self.build_identity.get_component(comp_name).data if not self.fwcomps['RoseFW'] else self.fwcomps['RoseFW']
+
+    ftab = Ftab(component_data)
+
+    comp_name = 'Rap,RestoreRTKitOS'
+    if self.build_identity.has_component(comp_name):
+        rftab = Ftab(self.build_identity.get_component(comp_name).data)
+
+        component_data = rftab.get_entry_data(b'rrko')
+        if component_data is None:
+            self.logger.error('Could not find "rrko" entry in ftab. This will probably break things')
+        else:
+            ftab.add_entry(b'rrko', component_data)
+
+    response['FirmwareData'] = ftab.data
+
+    return response
+
+def get_veridian_firmware_data(self, info: Mapping):
+    self.logger.info(f'get_veridian_firmware_data: {info}')
+    comp_name = 'BMU,FirmwareMap'
+
+    # create Veridian request
+    request = TSSRequest()
+    parameters = dict()
+
+    # add manifest for current build_identity to parameters
+    # if self.fwcomps['VeridianFWM']:
+    #     self.sep_build_identity.populate_tss_request_parameters(parameters)
+    # else:
+    self.build_identity.populate_tss_request_parameters(parameters)
+
+    # add BMU,* tags from info dictionary to parameters
+    parameters.update(info)
+
+    # add required tags for Veridian TSS request
+    request.add_veridian_tags(parameters, None)
+
+    self.logger.info('Sending Veridian TSS request...')
+    response = request.send_receive()
+
+    ticket = response.get('BMU,Ticket')
+    if ticket is None:
+        self.logger.warning('No "BMU,Ticket" in TSS response, this might not work')
+
+    component_data = self.build_identity.get_component(comp_name).data if not self.fwcomps['VeridianFWM'] else self.fwcomps['VeridianFWM']
+    fw_map = plistlib.loads(component_data)
+    fw_map['fw_map_digest'] = self.build_identity['Manifest'][comp_name]['Digest']
+
+    bin_plist = plistlib.dumps(fw_map, fmt=plistlib.PlistFormat.FMT_BINARY)
+    response['FirmwareData'] = bin_plist
+
+    return response
+
+def get_se_firmware_data(self, info: Mapping):
+    chip_id = info.get('SE,ChipID')
+    if chip_id is None:
+        chip_id = info.get('SEChipID')
+        if chip_id is None:
+            chip_id = self.build_identity['Manifest']['SEChipID']
+
+    if chip_id == 0x20211:
+        comp_name = 'SE,Firmware'
+    elif chip_id in (0x73, 0x64, 0xC8, 0xD2):
+        comp_name = 'SE,UpdatePayload'
+    else:
+        self.logger.warning(f'Unknown SE,ChipID {chip_id} detected. Restore might fail.')
+
+        if self.build_identity.has_component('SE,UpdatePayload'):
+            comp_name = 'SE,UpdatePayload'
+        elif self.build_identity.has_component('SE,Firmware'):
+            comp_name = 'SE,Firmware'
+        else:
+            raise NotImplementedError('Neither \'SE,Firmware\' nor \'SE,UpdatePayload\' found in build identity.')
+
+    component_data = self.build_identity.get_component(comp_name).data if not self.fwcomps['SEFW'] else self.fwcomps['SEFW']
+
+    # create SE request
+    request = TSSRequest()
+    parameters = dict()
+
+    # add manifest for current build_identity to parameters
+    # if self.fwcomps['SEFW']:
+    #     self.sep_build_identity.populate_tss_request_parameters(parameters)
+    # else:
+    self.build_identity.populate_tss_request_parameters(parameters)
+
+    # add SE,* tags from info dictionary to parameters
+    parameters.update(info)
+
+    # add required tags for SE TSS request
+    request.add_se_tags(parameters, None)
+
+    self.logger.info('Sending SE TSS request...')
+    response = request.send_receive()
+
+    if 'SE,Ticket' in response:
+        self.logger.info('Received SE ticket')
+    else:
+        raise PyMobileDevice3Exception('No \'SE,Ticket\' in TSS response, this might not work')
+
+    response['FirmwareData'] = component_data
+
+    return response
+
+
 Restore.__init__ = Restore__init__
 Restore.send_baseband_data = send_baseband_data
 Restore.send_nor = send_nor
+Restore.get_rose_firmware_data = get_rose_firmware_data
+Restore.get_se_firmware_data = get_se_firmware_data
+Restore.get_veridian_firmware_data = get_veridian_firmware_data
+Restore.get_savage_firmware_data = get_savage_firmware_data
 
 Mode.NORMAL_MODE = 0x12a8
 
@@ -556,6 +737,24 @@ class PyFuturerestore:
         self.sepbm = None
         self.bbfw = None
         self.bbbm = None
+        self.fwcomps = {
+            'RoseFW' : None,
+            'SEFW' : None,
+            'VeridianFWM' : None,
+            'VeridianDGM' : None,
+            'SavageFW' : {
+                'Savage,B0-Prod-Patch' : None,
+                'Savage,B0-Dev-Patch' : None,
+                'Savage,B2-Prod-Patch' : None,
+                'Savage,B2-Dev-Patch' : None,
+                'Savage,BA-Prod-Patch' : None,
+                'Savage,BA-Dev-Patch' : None
+            }
+        }
+        self.rosefw = None
+        self.sefw = None
+        self.savagefw = None
+        self.verridianfw = None
         self.has_get_latest_fwurl = False
         self.noibss = noibss
 
@@ -636,12 +835,100 @@ class PyFuturerestore:
         self.im4m = pyimg4.IM4M(self.tss['ApImg4Ticket'])
         self.logger.info(f'Done reading signing ticket {path}')
 
-    def load_latest_sep(self):
+    def download_latest_bm(self):
         self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
         retassure((latest_url := self.get_latest_fwurl()) != -1, 'Could not get latest firmware URL')
         self.logger.debug(f'Latest firmware URL: {latest_url}')
         retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1,
                   'Could not download latest BuildManifest.plist')
+        return latest_url, latest_bm
+    def download_latest_fw_components(self):
+        self.load_latest_rose()
+        self.load_latest_se()
+        self.load_latest_veridian()
+        self.load_latest_savages()
+        self.logger.info('Finished downloading the latest firmware components!')
+
+    def load_latest_rose(self):
+        latest_url, latest_bm = self.download_latest_bm()
+        self.ipsw.load_custom_manifest(latest_bm)
+        build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
+        try:
+            rose_path = build_identity.get_component_path('Rap,RTKitOS')
+            self.logger.info('Downloading Rose firmware')
+            retassure((latest_rosefw := self.download_buffer(latest_url, rose_path)) != -1, 'Could not download Rose firmware')
+            self.fwcomps['RoseFW'] = latest_rosefw
+        except:
+            self.logger.info('Rose firmware does not exist for this device, skipping')
+
+    def load_latest_se(self):
+        latest_url, latest_bm = self.download_latest_bm()
+        self.ipsw.load_custom_manifest(latest_bm)
+        build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
+        try:
+            se_path = build_identity.get_component_path('SE,UpdatePayload')
+            self.logger.info('Downloading SE firmware')
+            retassure((latest_sefw := self.download_buffer(latest_url, se_path)) != -1, 'Could not download SE firmware')
+            self.fwcomps['SEFW'] = latest_sefw
+        except:
+            self.logger.info('Rose firmware does not exist for this device, skipping')
+
+    def load_latest_savages(self):
+        latest_url, latest_bm = self.download_latest_bm()
+        self.ipsw.load_custom_manifest(latest_bm)
+        build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
+        try:
+            savageB0ProdPath = build_identity.get_component_path('Savage,B0-Prod-Patch')
+            savageB0DevPath = build_identity.get_component_path('Savage,B0-Dev-Patch')
+            savageB2ProdPath = build_identity.get_component_path('Savage,B2-Prod-Patch')
+            savageB2DevPath = build_identity.get_component_path('Savage,B2-Dev-Patch')
+            savageBAProdPath = build_identity.get_component_path('Savage,BA-Prod-Patch')
+            savageBADevPath = build_identity.get_component_path('Savage,BA-Dev-Patch')
+            self.logger.info('Downloading Savage,B0-Prod-Patch')
+            retassure((fw1 := self.download_buffer(latest_url, savageB0ProdPath)) != -1, 'Could not download Savage,B0-Prod-Patch')
+            self.fwcomps['SavageFW']['Savage,B0-Prod-Patch'] = fw1
+            self.logger.info('Downloading Savage,B0-Dev-Patch')
+            retassure((fw2 := self.download_buffer(latest_url, savageB0DevPath)) != -1,
+                      'Could not download Savage,B0-Dev-Patch')
+            self.fwcomps['SavageFW']['Savage,B0-Dev-Patch'] = fw2
+            self.logger.info('Downloading Savage,B2-Prod-Patch')
+            retassure((fw3 := self.download_buffer(latest_url, savageB2ProdPath)) != -1,
+                      'Could not download Savage,B2-Prod-Patch')
+            self.fwcomps['SavageFW']['Savage,B2-Prod-Patch'] = fw3
+            self.logger.info('Downloading Savage,B2-Dev-Patch')
+            retassure((fw4 := self.download_buffer(latest_url, savageB2DevPath)) != -1,
+                      'Could not download Savage,B2-Dev-Patch')
+            self.fwcomps['SavageFW']['Savage,B2-Dev-Patch'] = fw4
+            self.logger.info('Downloading Savage,BA-Prod-Patch')
+            retassure((fw5 := self.download_buffer(latest_url, savageBAProdPath)) != -1,
+                      'Could not download Savage,BA-Prod-Patch')
+            self.fwcomps['SavageFW']['Savage,BA-Prod-Patch'] = fw5
+            self.logger.info('Downloading Savage,BA-Dev-Patch')
+            retassure((fw6 := self.download_buffer(latest_url, savageBADevPath)) != -1,
+                      'Could not download Savage,BA-Dev-Patch')
+            self.fwcomps['SavageFW']['Savage,BA-Dev-Patch'] = fw6
+        except:
+            self.logger.info('Savage firmwares do not exist for this device, skipping')
+
+    def load_latest_veridian(self):
+        latest_url, latest_bm = self.download_latest_bm()
+        self.ipsw.load_custom_manifest(latest_bm)
+        build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
+        try:
+            veridianDGM_path = build_identity.get_component_path('BMU,DigestMap')
+            veridianFWM_path = build_identity.get_component_path('BMU,FirmwareMap')
+            self.logger.info('Downloading Veridian DigestMap')
+            retassure((veridianDGM_fw := self.download_buffer(latest_url, veridianDGM_path)) != -1, 'Could not download Veridian DigestMap')
+            self.fwcomps['VeridianDGM'] = veridianDGM_fw
+            self.logger.info('Downloading Veridian FirmwareMap')
+            retassure((veridianFWM_fw := self.download_buffer(latest_url, veridianFWM_path)) != -1,
+                      'Could not download Veridian FirmwareMap')
+            self.fwcomps['VeridianFWM'] = veridianFWM_fw
+        except:
+            self.logger.info('Veridian firmwares do not exist for this device, skipping')
+
+    def load_latest_sep(self):
+        latest_url, latest_bm = self.download_latest_bm()
         self.ipsw.load_custom_manifest(latest_bm)
         build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
         sep_path = build_identity.get_component_path('SEP')
@@ -651,10 +938,7 @@ class PyFuturerestore:
         self.logger.info('done loading latest SEP')
 
     def load_latest_baseband(self):
-        self.logger.info(f'Getting latest firmware URL for {self.device.irecv.product_type}')
-        retassure((latest_url := self.get_latest_fwurl()) != -1, 'Could not get latest firmware URL')
-        self.logger.debug(f'Latest firmware URL: {latest_url}')
-        retassure((latest_bm := self.download_buffer(latest_url, 'BuildManifest.plist')) != -1, 'Could not download latest BuildManifest.plist')
+        latest_url, latest_bm = self.download_latest_bm()
         self.ipsw.load_custom_manifest(latest_bm)
         build_identity = self.ipsw._build_manifest.get_build_identity(self.device.hardware_model)
         bbfwpath = build_identity.get_component_path('BasebandFirmware')
