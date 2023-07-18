@@ -1160,6 +1160,7 @@ class PyFuturerestore:
                           bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, fwcomps=self.fwcomps, behavior=Behavior.Erase)
         restore.recovery.device = Device(irecv=self.irecv)
         self.logger.info('Getting SEP ticket')
+        restore.recovery.sep_build_identity = restore.sep_build_identity
         restore.septss = restore.recovery.get_tss_response(sep=True)
         self.logger.info('Booting ramdisk')
         restore.recovery.boot_ramdisk()
