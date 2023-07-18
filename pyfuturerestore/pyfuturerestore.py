@@ -123,7 +123,7 @@ def Recovery__init__(self, ipsw: BytesIO, device: Device,
     self.rdskdata = rdskdata
     self.rkrndata = rkrndata
 
-def get_tss_response(self):
+def get_tss_response(self, sep=False):
     # populate parameters
     parameters = dict()
 
@@ -142,7 +142,7 @@ def get_tss_response(self):
     else:
         parameters['ApSupportsImg4'] = False
 
-    if self.sepfw:
+    if sep:
         self.sep_build_identity.populate_tss_request_parameters(parameters)
     else:
         self.build_identity.populate_tss_request_parameters(parameters)
@@ -274,6 +274,7 @@ def Restore__init__(self, ipsw: zipfile.ZipFile, device: Device, tss=None, sepfw
     self._restored: Optional[RestoredClient] = None
     self._restore_finished = False
     self.fwcomps = fwcomps
+    self.septss = None
 
     # used when ignore_fdr=True, to store an active FDR connection just to make the device believe it can actually
     # perform an FDR communication, but without really establishing any
@@ -477,7 +478,7 @@ def send_nor(self, message: Mapping):
     req['NorImageData'] = norimage
 
     for component in ('RestoreSEP', 'SEP'):
-        comp = self.sep_build_identity.get_component(component, tss=self.recovery.tss, data=self.sepfw)
+        comp = self.sep_build_identity.get_component(component, tss=self.septss, data=self.sepfw)
         if comp.path:
             req[f'{component}ImageData'] = comp.personalized_data
 
@@ -1151,14 +1152,17 @@ class PyFuturerestore:
             self.enter_pwnrecovery(restore.build_identity ,bootargs=bootargs)
             self.logger.info('waiting for reconnect in Recovery mode')
             self.reconnect_irecv(is_recovery=True)
-        self.logger.info('About to restore device')
         # reinit restore
         self.reconnect_irecv()
         restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
-                          bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, behavior=Behavior.Erase)
+                          bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, fwcomps=self.fwcomps, behavior=Behavior.Erase)
         restore.recovery.device = Device(irecv=self.irecv)
+        self.logger.info('Getting SEP ticket')
+        restore.septss = restore.recovery.get_tss_response(sep=True)
         self.logger.info('Booting ramdisk')
         restore.recovery.boot_ramdisk()
+        self.logger.info('About to restore device')
+        sleep(5)
         self.logger.info('Starting restore')
         restore.restore_device()
 
