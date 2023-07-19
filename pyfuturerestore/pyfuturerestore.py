@@ -1,6 +1,7 @@
 import binascii
 from usb import USBError
 import pyimg4
+from pymobiledevice3.restore import tss, asr, fdr
 from pymobiledevice3.restore.restore import Restore
 import struct
 from pyipatcher.ipatcher import IPatcher
@@ -736,6 +737,9 @@ class PyFuturerestore:
         self.ipsw: IPSW = IPSW(ipsw)
         self.verbose = verbose
         self.logger = logger
+        asr.logger = logger
+        fdr.logger = logger
+        tss.logger = logger
         self.sepfw = None
         self.sepbm = None
         self.bbfw = None
