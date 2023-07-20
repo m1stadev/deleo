@@ -1170,10 +1170,6 @@ class PyFuturerestore:
         restore.recovery.boot_ramdisk()
         self.logger.info('About to restore device')
         sleep(5)
-        del restore
-        restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
-                          bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, fwcomps=self.fwcomps,
-                          behavior=Behavior.Erase)
         self.logger.info('Starting restore')
         restore.restore_device()
 
