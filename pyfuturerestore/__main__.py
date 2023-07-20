@@ -80,6 +80,7 @@ def _main():
     client = PyFuturerestore(ipsw, logger, setnonce=isinstance(args.set_nonce, blank), serial=args.serial, custom_gen=args.set_nonce[0] if not isinstance(args.set_nonce, blank) else None, ignore_nonce_matching=args.ignore_nonce_matching, noibss=args.no_ibss, skip_blob=args.skip_blob, pwndfu=args.use_pwndfu, custom_usb_backend=args.usb_backend[0] if args.usb_backend else None, no_cache=args.no_cache, verbose=args.debug)
     client.init()
     logger.info('pyfuturerestore init done')
+    retassure(client.irecv.is_image4_supported, '32-bit device is not supported')
     if args.exit_recovery:
         client.exit_recovery()
         logger.info('Done')
