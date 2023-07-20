@@ -1166,10 +1166,6 @@ class PyFuturerestore:
         self.logger.info('Getting SEP ticket')
         restore.recovery.sep_build_identity = restore.sep_build_identity
         restore.septss = restore.recovery.get_tss_response(sep=True)
-        self.logger.info('Booting ramdisk')
-        restore.recovery.boot_ramdisk()
-        self.logger.info('About to restore device')
-        sleep(5)
         self.logger.info('Starting restore')
-        restore.restore_device()
+        restore.update()
 
