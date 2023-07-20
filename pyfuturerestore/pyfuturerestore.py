@@ -1163,11 +1163,15 @@ class PyFuturerestore:
         restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
                           bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, fwcomps=self.fwcomps, behavior=Behavior.Erase)
         restore.recovery.device = Device(irecv=self.irecv)
+        self.logger.info('Booting ramdisk')
+        restore.recovery.boot_ramdisk()
+        del restore
+        restore = Restore(self.zipipsw, self.device, tss=self.tss, sepfw=self.sepfw, sepbm=self.sepbm, bbfw=self.bbfw,
+                          bbbm=self.bbbm, rdskdata=self.ramdiskdata, rkrndata=self.rkrndata, fwcomps=self.fwcomps,
+                          behavior=Behavior.Erase)
         self.logger.info('Getting SEP ticket')
         restore.recovery.sep_build_identity = restore.sep_build_identity
         restore.septss = restore.recovery.get_tss_response(sep=True)
-        self.logger.info('Booting ramdisk')
-        restore.recovery.boot_ramdisk()
         self.logger.info('About to restore device')
         sleep(5)
         self.logger.info('Starting restore')
