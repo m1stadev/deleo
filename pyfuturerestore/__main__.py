@@ -85,6 +85,7 @@ def _main():
         client.exit_recovery()
         logger.info('Done')
         return
+    retassure(args.apticket, 'APTicket is not specified')
     client.load_ap_ticket(args.apticket[0])
 
     if args.latest_sep:
