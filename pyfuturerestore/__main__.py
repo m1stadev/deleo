@@ -13,7 +13,7 @@ class blank:
 
 def _main():
     parser = argparse.ArgumentParser(description='pyfuturerestore - A re-implementation of futurerestore in Python', usage='pyfuturerestore [OPTIONS] IPSW')
-    parser.add_argument('-t','--apticket',metavar='PATH',nargs=1,help='Signing tickets used for restoring')
+    parser.add_argument('-t','--apticket',metavar='PATH',nargs=1,help='Signing tickets used for restoring',required=True)
     parser.add_argument('--exit-recovery',help='Exit from Recovery mode',action='store_true')
     parser.add_argument('--use-pwndfu',help='Restoring devices with Odysseus method. Device needs to be in pwned DFU mode already',action='store_true')
     parser.add_argument('--no-ibss',
@@ -85,7 +85,6 @@ def _main():
         client.exit_recovery()
         logger.info('Done')
         return
-    retassure(args.apticket, 'APTicket is not specified')
     client.load_ap_ticket(args.apticket[0])
 
     if args.latest_sep:
