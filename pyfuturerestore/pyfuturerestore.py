@@ -1018,8 +1018,8 @@ class PyFuturerestore:
             retassure(self.irecv, 'No IRecv client')
         except:
             reterror('No IRecv client')
-        ibss_name = PYFUTURERESTORE_TEMP_PATH + 'ibss.' + self.irecv.product_type + self.irecv.hardware_model + 'patched.img4'
-        ibec_name = PYFUTURERESTORE_TEMP_PATH + 'ibec.' + self.irecv.product_type + self.irecv.hardware_model + 'patched.img4'
+        ibss_name = PYFUTURERESTORE_TEMP_PATH + 'ibss.' + self.irecv.product_type + '.' + self.irecv.hardware_model + '.patched.img4'
+        ibec_name = PYFUTURERESTORE_TEMP_PATH + 'ibec.' + self.irecv.product_type + '.' + self.irecv.hardware_model + '.patched.img4'
         _ibss = None
         _ibec = None
         if not self.no_cache:
