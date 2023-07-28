@@ -1,50 +1,51 @@
 import binascii
-from usb import USBError
-import pyimg4
-from pymobiledevice3.restore import tss, asr, fdr
-from pymobiledevice3.restore.restore import Restore
-import struct
-from pyipatcher.ipatcher import IPatcher
 import logging
-from pathlib import Path
-import requests
-import typing
-from zipfile import ZipFile
-from pymobiledevice3.exceptions import IncorrectModeError
-import sys
+import os
 import plistlib
-from time import sleep
-from ipsw_parser.exceptions import NoSuchBuildIdentityError
-from pymobiledevice3.usbmux import list_devices
-from pymobiledevice3.lockdown import LockdownClient, create_using_usbmux
-from remotezip import RemoteZip
-from io import BytesIO
+import struct
+import sys
+import typing
 import zipfile
-from usb.core import find
-from usb.backend.libusb1 import get_backend
-
+from io import BytesIO
+from pathlib import Path
+from time import sleep
 from typing import Mapping, Optional
-from m1n1Exception import retassure, reterror
-from pymobiledevice3.irecv import IRecv, Mode
-from ipsw_parser.ipsw import IPSW
-from ipsw_parser.build_manifest import BuildManifest
-from pymobiledevice3.restore.recovery import Recovery
+from zipfile import ZipFile
 
-from pymobiledevice3.exceptions import ConnectionFailedError, NoDeviceConnectedError, PyMobileDevice3Exception
+import pyimg4
+import requests
+from ipsw_parser.build_manifest import BuildManifest
+from ipsw_parser.exceptions import NoSuchBuildIdentityError
+from ipsw_parser.ipsw import IPSW
+from m1n1Exception import retassure, reterror
+from pyipatcher.ipatcher import IPatcher
+from pymobiledevice3.exceptions import (ConnectionFailedError,
+                                        IncorrectModeError,
+                                        NoDeviceConnectedError,
+                                        PyMobileDevice3Exception)
+from pymobiledevice3.irecv import IRecv, Mode
+from pymobiledevice3.lockdown import LockdownClient, create_using_usbmux
+from pymobiledevice3.restore import asr, fdr, tss
 from pymobiledevice3.restore.asr import ASRClient
-from pymobiledevice3.restore.base_restore import RESTORE_VARIANT_ERASE_INSTALL, RESTORE_VARIANT_MACOS_RECOVERY_OS, \
-    RESTORE_VARIANT_UPGRADE_INSTALL, BaseRestore
+from pymobiledevice3.restore.base_restore import (
+    RESTORE_VARIANT_ERASE_INSTALL, RESTORE_VARIANT_MACOS_RECOVERY_OS,
+    RESTORE_VARIANT_UPGRADE_INSTALL, BaseRestore)
 from pymobiledevice3.restore.consts import PROGRESS_BAR_OPERATIONS, lpol_file
 from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.fdr import FDRClient, fdr_type, start_fdr_thread
 from pymobiledevice3.restore.ftab import Ftab
 from pymobiledevice3.restore.recovery import Behavior, Recovery
+from pymobiledevice3.restore.restore import Restore
 from pymobiledevice3.restore.restore_options import RestoreOptions
 from pymobiledevice3.restore.restored_client import RestoredClient
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 from pymobiledevice3.service_connection import ServiceConnection
+from pymobiledevice3.usbmux import list_devices
 from pymobiledevice3.utils import plist_access_path
-import os
+from remotezip import RemoteZip
+from usb import USBError
+from usb.backend.libusb1 import get_backend
+from usb.core import find
 
 # ------------- subclasses, overwritings -------------
 
