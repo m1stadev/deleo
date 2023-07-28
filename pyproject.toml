@@ -16,12 +16,13 @@ remotezip = "^0.12.1"
 ipsw-parser = "^1.1.5"
 argparse = "^1.4.0"
 pyusb = "^1.2.1"
+click = "^8.1.6"
 
 [tool.poetry.scripts]
 pyfuturerestore = "pyfuturerestore.__main__:main"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/Mini-Exploit/pyifuturerestore/issues"
+"Bug Tracker" = "https://github.com/Mini-Exploit/pyfuturerestore/issues"
 
 [build-system]
 requires = ["poetry-core"]
