@@ -690,33 +690,6 @@ def strmode(mode: Mode):
     else:
         return None
 
-# thx m1sta
-def _get_backend():  # Attempt to find a libusb 1.0 library to use as pyusb's backend, exit if one isn't found.
-    directories = (
-        '/usr/local/lib',
-        '/opt/procursus/lib',
-        '/usr/lib',
-        '/opt/homebrew/lib' # this works on my M2 Mac, tell me to add more if libusb is in a different path on your computer
-    )  # Common library directories to search
-
-    libusb1 = None
-    for libdir in directories:
-        for file in Path(libdir).glob('libusb-1.0.0.*'):
-            if not file.is_file() or (file.suffix not in ('.so', '.dylib')):
-                continue
-
-            libusb1 = file
-            break
-
-        else:
-            continue
-
-        break
-
-    if libusb1 is None:
-        return -1
-
-    return str(libusb1)
 
 class PyFuturerestore:
     def __init__(self, ipsw: ZipFile, logger, setnonce=False, serial=False, custom_gen=None, ignore_nonce_matching=False, noibss=False, skip_blob=False, pwndfu=False, no_cache=False, custom_usb_backend=None, verbose=False):
