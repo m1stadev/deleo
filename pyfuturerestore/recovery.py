@@ -15,7 +15,7 @@ from pymobiledevice3.restore.tss import TSSRequest
 
 
 class Recovery(recovery.Recovery):
-    def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, tss: Mapping = None, behavior: Behavior = Behavior.Update):
+    def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, behavior: Behavior, tss: Mapping = None):
             super().__init__(ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
             self.latest_ipsw = IPSW(latest_ipsw)
             self.shsh = shsh
