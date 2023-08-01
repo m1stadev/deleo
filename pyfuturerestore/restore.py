@@ -4,6 +4,7 @@ import struct
 from typing import Mapping, Optional
 from zipfile import ZipFile
 
+from ipsw_parser.ipsw import IPSW
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import restore
 from pymobiledevice3.restore.base_restore import BaseRestore
@@ -21,7 +22,7 @@ from pyfuturerestore.recovery import Recovery
 
 class Restore(restore.Restore):
     def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, behavior: Behavior, tss: Mapping = None):
-        BaseRestore.__init__(ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
+        BaseRestore.__init__(self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
         self.recovery = Recovery(ipsw, latest_ipsw, device, shsh, behavior, tss=tss)
         self.bbtss: Optional[TSSResponse] = None
         self._restored: Optional[RestoredClient] = None
@@ -98,6 +99,9 @@ class Restore(restore.Restore):
             'DeviceTree': self.send_component,
         }
 
+        self.latest_ipsw = IPSW(latest_ipsw)
+        self.shsh = TSSResponse(shsh)
+
     def send_personalized_boot_object_v3(self, message: Mapping):
         self.logger.debug('send_personalized_boot_object_v3')
         image_name = message['Arguments']['ImageName']
@@ -148,6 +152,15 @@ class Restore(restore.Restore):
         self._restored.send({'FileDataDone': True})
 
         self.logger.info(f'Done sending {component_name}')
+
+    def send_root_ticket(self, message: Mapping):
+        self.logger.info('About to send RootTicket...')
+
+        if self.recovery.shsh is None:
+            raise PyMobileDevice3Exception('Cannot send RootTicket without SHSH blob')
+
+        self.logger.info('Sending RootTicket now...')
+        self._restored.send({'RootTicketData': self.recovery.shsh.ap_img4_ticket})
 
     def send_nor(self, message: Mapping):
         self.logger.info('About to send NORData...')
@@ -217,7 +230,7 @@ class Restore(restore.Restore):
         req['NorImageData'] = norimage
 
         for component in ('RestoreSEP', 'SEP'):
-            comp = self.latest_build_identity.get_component(component, tss=self.recovery.tss)
+            comp = self.recovery.latest_build_identity.get_component(component, tss=self.recovery.tss)
             if comp.path:
                 req[f'{component}ImageData'] = comp.personalized_data
 
@@ -246,7 +259,7 @@ class Restore(restore.Restore):
             parameters['BbGoldCertId'] = bb_cert_id
             parameters['BbSNUM'] = bb_snum
 
-            self.latest_build_identity.populate_tss_request_parameters(parameters)
+            self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
             # create baseband request
             request = TSSRequest()
@@ -255,7 +268,7 @@ class Restore(restore.Restore):
             request.add_common_tags(parameters)
             request.add_baseband_tags(parameters)
 
-            fdr_support = self.latest_build_identity['Info'].get('FDRSupport', False)
+            fdr_support = self.recovery.latest_build_identity['Info'].get('FDRSupport', False)
             if fdr_support:
                 request.update({'ApProductionMode': True, 'ApSecurityMode': True})
 
@@ -267,7 +280,7 @@ class Restore(restore.Restore):
                 self.bbtss = bbtss
 
         # get baseband firmware file path from build identity
-        bbfwpath = self.latest_build_identity['Manifest']['BasebandFirmware']['Info']['Path']
+        bbfwpath = self.recovery.latest_build_identity['Manifest']['BasebandFirmware']['Info']['Path']
 
         # extract baseband firmware to temp file
         bbfw = self.latest_ipsw.read(bbfwpath)
@@ -342,7 +355,7 @@ class Restore(restore.Restore):
         if chip_id is None:
             chip_id = info.get('SEChipID')
             if chip_id is None:
-                chip_id = self.latest_build_identity['Manifest']['SEChipID']
+                chip_id = self.recovery.latest_build_identity['Manifest']['SEChipID']
 
         if chip_id == 0x20211:
             comp_name = 'SE,Firmware'
@@ -351,21 +364,21 @@ class Restore(restore.Restore):
         else:
             self.logger.warning(f'Unknown SE,ChipID {chip_id} detected. Restore might fail.')
 
-            if self.latest_build_identity.has_component('SE,UpdatePayload'):
+            if self.recovery.latest_build_identity.has_component('SE,UpdatePayload'):
                 comp_name = 'SE,UpdatePayload'
-            elif self.latest_build_identity.has_component('SE,Firmware'):
+            elif self.recovery.latest_build_identity.has_component('SE,Firmware'):
                 comp_name = 'SE,Firmware'
             else:
                 raise NotImplementedError('Neither \'SE,Firmware\' nor \'SE,UpdatePayload\' found in build identity.')
 
-        component_data = self.latest_build_identity.get_component(comp_name).data
+        component_data = self.recovery.latest_build_identity.get_component(comp_name).data
 
         # create SE request
         request = TSSRequest()
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         # add SE,* tags from info dictionary to parameters
         parameters.update(info)
@@ -391,7 +404,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         # add Yonkers,* tags from info dictionary to parameters
         parameters.update(info)
@@ -413,7 +426,7 @@ class Restore(restore.Restore):
             raise PyMobileDevice3Exception('No \'Yonkers,Ticket\' in TSS response, this might not work')
 
         # now get actual component data
-        component_data = self.latest_build_identity.get_component(comp_name).data
+        component_data = self.recovery.latest_build_identity.get_component(comp_name).data
 
         firmware_data = {
             'YonkersFirmware': component_data,
@@ -429,7 +442,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         # add Savage,* tags from info dictionary to parameters
         parameters.update(info)
@@ -451,7 +464,7 @@ class Restore(restore.Restore):
             raise PyMobileDevice3Exception('No \'Savage,Ticket\' in TSS response, this might not work')
 
         # now get actual component data
-        component_data = self.latest_build_identity.get_component(comp_name).data
+        component_data = self.recovery.latest_build_identity.get_component(comp_name).data
         component_data = struct.pack('<L', len(component_data)) + b'\x00' * 12
 
         response['FirmwareData'] = component_data
@@ -466,7 +479,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         parameters['ApProductionMode'] = True
 
@@ -490,13 +503,13 @@ class Restore(restore.Restore):
             self.logger.error('No "Rap,Ticket" in TSS response, this might not work')
 
         comp_name = 'Rap,RTKitOS'
-        component_data = self.latest_build_identity.get_component(comp_name).data
+        component_data = self.recovery.latest_build_identity.get_component(comp_name).data
 
         ftab = Ftab(component_data)
 
         comp_name = 'Rap,RestoreRTKitOS'
-        if self.latest_build_identity.has_component(comp_name):
-            rftab = Ftab(self.latest_build_identity.get_component(comp_name).data)
+        if self.recovery.latest_build_identity.has_component(comp_name):
+            rftab = Ftab(self.recovery.latest_build_identity.get_component(comp_name).data)
 
             component_data = rftab.get_entry_data(b'rrko')
             if component_data is None:
@@ -517,7 +530,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         # add BMU,* tags from info dictionary to parameters
         parameters.update(info)
@@ -532,9 +545,9 @@ class Restore(restore.Restore):
         if ticket is None:
             self.logger.warning('No "BMU,Ticket" in TSS response, this might not work')
 
-        component_data = self.latest_build_identity.get_component(comp_name).data
+        component_data = self.recovery.latest_build_identity.get_component(comp_name).data
         fw_map = plistlib.loads(component_data)
-        fw_map['fw_map_digest'] = self.latest_build_identity['Manifest'][comp_name]['Digest']
+        fw_map['fw_map_digest'] = self.recovery.latest_build_identity['Manifest'][comp_name]['Digest']
 
         bin_plist = plistlib.dumps(fw_map, fmt=plistlib.PlistFormat.FMT_BINARY)
         response['FirmwareData'] = bin_plist
@@ -550,7 +563,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         # add Baobab,* tags from info dictionary to parameters
         parameters.update(info)
@@ -565,7 +578,7 @@ class Restore(restore.Restore):
         if ticket is None:
             self.logger.warning('No "Baobab,Ticket" in TSS response, this might not work')
 
-        response['FirmwareData'] = self.latest_build_identity.get_component(comp_name).data
+        response['FirmwareData'] = self.recovery.latest_build_identity.get_component(comp_name).data
 
         return response
 
@@ -579,7 +592,7 @@ class Restore(restore.Restore):
         parameters = dict()
 
         # add manifest for latest build_identity to parameters
-        self.latest_build_identity.populate_tss_request_parameters(parameters)
+        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
 
         parameters['ApProductionMode'] = True
         if self.device.is_image4_supported:
@@ -618,16 +631,16 @@ class Restore(restore.Restore):
             self.logger.warning(f'No "{ticket_name}" in TSS response, this might not work')
 
         comp_name = f'Timer,RTKitOS,{tag}'
-        if self.latest_build_identity.has_component(comp_name):
-            ftab = Ftab(self.latest_build_identity.get_component(comp_name).data)
+        if self.recovery.latest_build_identity.has_component(comp_name):
+            ftab = Ftab(self.recovery.latest_build_identity.get_component(comp_name).data)
             if ftab.tag != b'rkos':
                 self.logger.warning(f'Unexpected tag {ftab.tag}. continuing anyway.')
         else:
             self.logger.info(f'NOTE: Build identity does not have a "{comp_name}" component.')
 
         comp_name = f'Timer,RestoreRTKitOS,{tag}'
-        if self.latest_build_identity.has_component(comp_name):
-            rftab = Ftab(self.latest_build_identity.get_component(comp_name).data)
+        if self.recovery.latest_build_identity.has_component(comp_name):
+            rftab = Ftab(self.recovery.latest_build_identity.get_component(comp_name).data)
 
             component_data = rftab.get_entry_data(b'rrko')
             if component_data is None:

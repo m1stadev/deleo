@@ -7,18 +7,21 @@ from ipsw_parser.exceptions import NoSuchBuildIdentityError
 from ipsw_parser.ipsw import IPSW
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import recovery
-from pymobiledevice3.restore.base_restore import Behavior
+from pymobiledevice3.restore.base_restore import BaseRestore, Behavior
 from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.recovery import (RESTORE_VARIANT_ERASE_INSTALL,
                                               RESTORE_VARIANT_UPGRADE_INSTALL)
-from pymobiledevice3.restore.tss import TSSRequest
+from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 
 
 class Recovery(recovery.Recovery):
     def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, behavior: Behavior, tss: Mapping = None):
-            super().__init__(ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
+            BaseRestore.__init__(self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
+            self.tss_localpolicy = None
+            self.tss_recoveryos_root_ticket = None
+            self.restore_boot_args = None
             self.latest_ipsw = IPSW(latest_ipsw)
-            self.shsh = shsh
+            self.shsh = TSSResponse(shsh)
 
             self.logger.debug('scanning 2nd BuildManifest.plist for the correct BuildIdentity')
 
