@@ -5,6 +5,7 @@ from typing import BinaryIO
 from zipfile import ZipFile
 
 import click
+import coloredlogs
 from pymobiledevice3.cli.restore import Command
 from pymobiledevice3.irecv import IRecv
 from pymobiledevice3.lockdown import LockdownClient
@@ -12,9 +13,21 @@ from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.recovery import Behavior
 from remotezip import RemoteZip
 
-from pyfuturerestore import PyFuturerestore, __version__
+from pyfuturerestore import Restore, __version__
 
-logger = logging.getLogger('pymobiledevice3')
+coloredlogs.install(level=logging.INFO)
+
+logging.getLogger('quic').disabled = True
+logging.getLogger('asyncio').disabled = True
+logging.getLogger('zeroconf').disabled = True
+logging.getLogger('parso.cache').disabled = True
+logging.getLogger('parso.cache.pickle').disabled = True
+logging.getLogger('parso.python.diff').disabled = True
+logging.getLogger('humanfriendly.prompts').disabled = True
+logging.getLogger('blib2to3.pgen2.driver').disabled = True
+logging.getLogger('urllib3.connectionpool').disabled = True
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: Add rest of arguments
@@ -36,7 +49,8 @@ logger = logging.getLogger('pymobiledevice3')
     help='Keep user data during restore.',
 )
 @click.argument('ipsw')
-def main(device, shsh_blob: BinaryIO, ipsw: str, update_install: bool):
+@click.argument('latest_ipsw')
+def main(device, shsh_blob: BinaryIO, ipsw: str, latest_ipsw: str, update_install: bool):
     '''A Python CLI tool for downgrading *OS devices.'''
 
     if shsh_blob:
@@ -46,6 +60,11 @@ def main(device, shsh_blob: BinaryIO, ipsw: str, update_install: bool):
         ipsw = RemoteZip(ipsw)
     else:
         ipsw = ZipFile(ipsw)
+
+    if latest_ipsw.startswith('http://') or latest_ipsw.startswith('https://'):
+        latest_ipsw = RemoteZip(latest_ipsw)
+    else:
+        latest_ipsw = ZipFile(latest_ipsw)
 
     lockdown = None
     irecv = None
@@ -58,8 +77,7 @@ def main(device, shsh_blob: BinaryIO, ipsw: str, update_install: bool):
     behavior = Behavior.Update if update_install else Behavior.Erase
 
     try:
-#        Restore(ipsw, device, shsh=shsh, behavior=behavior).update()
-        pass
+        Restore(ipsw, latest_ipsw, device, shsh, behavior).update()
     except Exception:
         # click may "swallow" several exception types so we try to catch them all here
         traceback.print_exc()

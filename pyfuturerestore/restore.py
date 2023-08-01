@@ -2,21 +2,21 @@ import logging
 import plistlib
 import struct
 from typing import Mapping, Optional
-
-from tqdm import trange
 from zipfile import ZipFile
 
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
+from pymobiledevice3.restore import restore
 from pymobiledevice3.restore.base_restore import BaseRestore
 from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.ftab import Ftab
 from pymobiledevice3.restore.recovery import Behavior
-from pyfuturerestore.recovery import Recovery
 from pymobiledevice3.restore.restored_client import RestoredClient
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
-from pymobiledevice3.restore import restore
 from pymobiledevice3.service_connection import LockdownServiceConnection
 from pymobiledevice3.utils import plist_access_path
+from tqdm import trange
+
+from pyfuturerestore.recovery import Recovery
 
 
 class Restore(restore.Restore):

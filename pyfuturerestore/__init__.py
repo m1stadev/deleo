@@ -1,5 +1,5 @@
 from importlib.metadata import version
 
-from .pyfuturerestore import *
+from .restore import Restore
 
 __version__ = version(__package__)
