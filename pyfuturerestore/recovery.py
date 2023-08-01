@@ -1,41 +1,52 @@
-from pymobiledevice3.restore.recovery import Behavior, Recovery
+
+import logging
+from typing import Mapping
+from zipfile import ZipFile
+
+from ipsw_parser.exceptions import NoSuchBuildIdentityError
+from ipsw_parser.ipsw import IPSW
+from pymobiledevice3.exceptions import PyMobileDevice3Exception
+from pymobiledevice3.restore import recovery
+from pymobiledevice3.restore.base_restore import Behavior
 from pymobiledevice3.restore.device import Device
-from typing import BytesIO, Mapping, Optional
+from pymobiledevice3.restore.recovery import (RESTORE_VARIANT_ERASE_INSTALL,
+                                              RESTORE_VARIANT_UPGRADE_INSTALL)
+from pymobiledevice3.restore.tss import TSSRequest
 
 
-class FutureRecovery(Recovery):
-    def __init__(
-        self,
-        ipsw: BytesIO,
-        device: Device,
-        tss: Optional[Mapping] = None,
-        sepfw=None,
-        sepbm=None,
-        bbfw=None,
-        bbbm=None,
-        rdskdata=None,
-        rkrndata=None,
-        behavior: Behavior = Behavior.Update,
-    ):
-        BaseRestore.__init__(
-            self,
-            ipsw,
-            device,
-            tss,
-            sepfw=sepfw,
-            sepbm=sepbm,
-            bbfw=bbfw,
-            bbbm=bbbm,
-            behavior=behavior,
-            logger=logging.getLogger(__name__),
-        )
-        self.tss_localpolicy = None
-        self.tss_recoveryos_root_ticket = None
-        self.restore_boot_args = None
-        self.rdskdata = rdskdata
-        self.rkrndata = rkrndata
+class Recovery(recovery.Recovery):
+    def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, tss: Mapping = None, behavior: Behavior = Behavior.Update):
+            super().__init__(ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
+            self.latest_ipsw = IPSW(latest_ipsw)
+            self.shsh = shsh
 
-    def get_tss_response(self, sep=False):
+            self.logger.debug('scanning 2nd BuildManifest.plist for the correct BuildIdentity')
+
+            variant = {
+                Behavior.Update: RESTORE_VARIANT_UPGRADE_INSTALL,
+                Behavior.Erase: RESTORE_VARIANT_ERASE_INSTALL,
+            }[behavior]
+
+            try:
+                self.latest_build_identity = self.latest_ipsw.build_manifest.get_build_identity(self.device.hardware_model,
+                                                                                restore_behavior=behavior.value,
+                                                                                variant=variant)
+            except NoSuchBuildIdentityError:
+                if behavior == Behavior.Update:
+                    self.latest_build_identity = self.latest_ipsw.build_manifest.get_build_identity(self.device.hardware_model,
+                                                                                    restore_behavior=behavior.value)
+                else:
+                    raise
+
+            build_info = self.latest_build_identity.get('Info')
+            if build_info is None:
+                raise PyMobileDevice3Exception('build identity does not contain an "Info" element')
+
+            device_class = build_info.get('DeviceClass')
+            if device_class is None:
+                raise PyMobileDevice3Exception('build identity does not contain an "DeviceClass" element')
+
+    def get_tss_response(self):
         # populate parameters
         parameters = dict()
 
@@ -54,10 +65,7 @@ class FutureRecovery(Recovery):
         else:
             parameters['ApSupportsImg4'] = False
 
-        if sep:
-            self.sep_build_identity.populate_tss_request_parameters(parameters)
-        else:
-            self.build_identity.populate_tss_request_parameters(parameters)
+        self.latest_build_identity.populate_tss_request_parameters(parameters)
 
         tss = TSSRequest()
         tss.add_common_tags(parameters)
@@ -120,57 +128,11 @@ class FutureRecovery(Recovery):
         # send request and grab response
         return tss.send_receive()
 
-    def send_ramdisk(self):
-        component = 'RestoreRamDisk'
-        ramdisk_size = self.device.irecv.getenv('ramdisk-size')
-        self.logger.info(f'ramdisk-size: {ramdisk_size}')
-        if self.rdskdata:
-            self.device.irecv.send_buffer(self.rdskdata)
-        else:
-            self.send_component(component)
-        ramdisk_delay = self.device.irecv.getenv('ramdisk-delay')
-        self.logger.info(f'ramdisk-delay: {ramdisk_delay}')
-
-        sleep(2)
-        self.device.irecv.reset()
-        self.device.irecv.send_command('ramdisk')
-
-        sleep(2)
-
-    def send_kernelcache(self):
-        component = 'RestoreKernelCache'
-        if self.rkrndata:
-            self.device.irecv.send_buffer(self.rkrndata)
-        else:
-            self.send_component(component)
-        try:
-            self.device.irecv.ctrl_transfer(0x21, 1)
-        except USBError:
-            pass
-
-        if self.restore_boot_args:
-            self.device.irecv.send_command(f'setenv boot-args {self.restore_boot_args}')
-
-        try:
-            self.device.irecv.send_command('bootx', b_request=1)
-        except USBError:
-            pass
-
     def send_component(self, name: str):
-        # Use a specific TSS ticket for the Ap,LocalPolicy component
-        data = None
-        tss = self.tss
-        if name == 'Ap,LocalPolicy':
-            tss = self.tss_localpolicy
-            # If Ap,LocalPolicy => Inject an empty policy
-            data = lpol_file
-        if name in {'RestoreSEP', 'SEP'} and self.sepfw:
-            data = self.sep_build_identity.get_component(
-                name, tss=tss, data=self.sepfw
-            ).personalized_data
+        if name == 'RestoreSEP':
+            data = self.latest_build_identity.get_component(name, tss=self.tss).personalized_data
         else:
-            data = self.build_identity.get_component(
-                name, tss=tss, data=data
-            ).personalized_data
+            data = self.build_identity.get_component(name, tss=self.shsh).personalized_data
+
         self.logger.info(f'Sending {name} ({len(data)} bytes)...')
         self.device.irecv.send_buffer(data)
