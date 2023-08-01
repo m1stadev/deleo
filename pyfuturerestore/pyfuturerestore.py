@@ -44,7 +44,7 @@ from pymobiledevice3.restore.restore import Restore
 from pymobiledevice3.restore.restore_options import RestoreOptions
 from pymobiledevice3.restore.restored_client import RestoredClient
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
-from pymobiledevice3.service_connection import ServiceConnection
+from pymobiledevice3.service_connection import LockdownServiceConnection
 from pymobiledevice3.usbmux import list_devices
 from pymobiledevice3.utils import plist_access_path
 from remotezip import RemoteZip
