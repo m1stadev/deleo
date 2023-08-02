@@ -5,19 +5,33 @@ from typing import Mapping, Optional
 from zipfile import ZipFile
 
 from ipsw_parser.ipsw import IPSW
-from pymobiledevice3.exceptions import PyMobileDevice3Exception
-from pymobiledevice3.restore import restore
+from pymobiledevice3.exceptions import (NoDeviceConnectedError,
+                                        PyMobileDevice3Exception)
+from pymobiledevice3.restore import restore, restored_client
 from pymobiledevice3.restore.base_restore import BaseRestore
 from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.ftab import Ftab
 from pymobiledevice3.restore.recovery import Behavior
-from pymobiledevice3.restore.restored_client import RestoredClient
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 from pymobiledevice3.service_connection import LockdownServiceConnection
 from pymobiledevice3.utils import plist_access_path
 from tqdm import trange
 
 from pyfuturerestore.recovery import Recovery
+
+
+class RestoredClient(restored_client.RestoredClient):
+    DEFAULT_CLIENT_NAME = 'pyMobileDevice'
+
+    def __init__(self, udid=None, client_name=DEFAULT_CLIENT_NAME):
+        self.logger = logging.getLogger(__name__)
+        self.udid = self._get_or_verify_udid(udid)
+        self.service = LockdownServiceConnection.create_using_usbmux(self.udid, self.SERVICE_PORT, connection_type='USB')
+        self.label = client_name
+        self.query_type = self.service.send_recv_plist({'Request': 'QueryType'})
+        self.version = self.query_type.get('RestoreProtocolVersion')
+
+        assert self.query_type.get('Type') == 'com.apple.mobile.restored', f'wrong query type: {self.query_type}'
 
 
 class Restore(restore.Restore):
@@ -664,3 +678,11 @@ class Restore(restore.Restore):
         self._restored.send(
             {f'{component_name}File': self.build_identity.get_component(component,
                                                                         tss=self.recovery.shsh).personalized_data})
+
+    def _connect_to_restored_service(self):
+        while True:
+            try:
+                self._restored = RestoredClient()
+                break
+            except NoDeviceConnectedError:
+                pass
