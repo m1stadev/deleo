@@ -1754,13 +1754,13 @@ files = [
 
 [[package]]
 name = "pymobiledevice3"
-version = "2.2.0"
+version = "2.2.1"
 description = "Pure python3 implementation for working with iDevices (iPhone, etc...)"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymobiledevice3-2.2.0-py3-none-any.whl", hash = "sha256:cfcadfea59e116d8a5acf4ad62faa86f3c61be0fa617b396a2151cba9a8be6a5"},
-    {file = "pymobiledevice3-2.2.0.tar.gz", hash = "sha256:7a7e7d8c38f864d86c3c358b16621eb7c9b6a5ff464549fee5574572d8a34717"},
+    {file = "pymobiledevice3-2.2.1-py3-none-any.whl", hash = "sha256:a14ae286e326d937c77112107f1ea984d0e9212f74c816f88a6908682541d7d5"},
+    {file = "pymobiledevice3-2.2.1.tar.gz", hash = "sha256:4d1c67dc566c76d57549efd0d385894576c84c0ba3c8a6ccc0849bf29cd35676"},
 ]
 
 [package.dependencies]
