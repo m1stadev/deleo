@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
     '--update',
     'update_install',
     is_flag=True,
-    help='Keep user data during restore.',
+    help='Keep user data during restore (not recommended if downgrading).',
 )
 @click.argument('ipsw')
 @click.argument('latest_ipsw')
