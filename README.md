@@ -54,6 +54,7 @@ Options:
 
 ## TODO
 - Add PwnDFU functionality
+- Add a license
 
 ## Support
 
