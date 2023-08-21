@@ -50,7 +50,9 @@ logger = logging.getLogger(__name__)
 )
 @click.argument('ipsw')
 @click.argument('latest_ipsw')
-def main(device, shsh_blob: BinaryIO, ipsw: str, latest_ipsw: str, update_install: bool):
+def main(
+    device, shsh_blob: BinaryIO, ipsw: str, latest_ipsw: str, update_install: bool
+):
     '''A Python CLI tool for downgrading *OS devices.'''
 
     if shsh_blob:

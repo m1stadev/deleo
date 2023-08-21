@@ -1,4 +1,3 @@
-
 import logging
 from typing import Mapping
 from zipfile import ZipFile
@@ -15,39 +14,62 @@ from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 
 
 class Recovery(recovery.Recovery):
-    def __init__(self, ipsw: ZipFile, latest_ipsw: ZipFile, device: Device, shsh: Mapping, behavior: Behavior, tss: Mapping = None):
-            BaseRestore.__init__(self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__))
-            self.tss_localpolicy = None
-            self.tss_recoveryos_root_ticket = None
-            self.restore_boot_args = None
-            self.latest_ipsw = IPSW(latest_ipsw)
-            self.shsh = TSSResponse(shsh)
+    def __init__(
+        self,
+        ipsw: ZipFile,
+        latest_ipsw: ZipFile,
+        device: Device,
+        shsh: Mapping,
+        behavior: Behavior,
+        tss: Mapping = None,
+    ):
+        BaseRestore.__init__(
+            self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__)
+        )
+        self.tss_localpolicy = None
+        self.tss_recoveryos_root_ticket = None
+        self.restore_boot_args = None
+        self.latest_ipsw = IPSW(latest_ipsw)
+        self.shsh = TSSResponse(shsh)
 
-            self.logger.debug('scanning 2nd BuildManifest.plist for the correct BuildIdentity')
+        self.logger.debug(
+            'scanning 2nd BuildManifest.plist for the correct BuildIdentity'
+        )
 
-            variant = {
-                Behavior.Update: RESTORE_VARIANT_UPGRADE_INSTALL,
-                Behavior.Erase: RESTORE_VARIANT_ERASE_INSTALL,
-            }[behavior]
+        variant = {
+            Behavior.Update: RESTORE_VARIANT_UPGRADE_INSTALL,
+            Behavior.Erase: RESTORE_VARIANT_ERASE_INSTALL,
+        }[behavior]
 
-            try:
-                self.latest_build_identity = self.latest_ipsw.build_manifest.get_build_identity(self.device.hardware_model,
-                                                                                restore_behavior=behavior.value,
-                                                                                variant=variant)
-            except NoSuchBuildIdentityError:
-                if behavior == Behavior.Update:
-                    self.latest_build_identity = self.latest_ipsw.build_manifest.get_build_identity(self.device.hardware_model,
-                                                                                    restore_behavior=behavior.value)
-                else:
-                    raise
+        try:
+            self.latest_build_identity = (
+                self.latest_ipsw.build_manifest.get_build_identity(
+                    self.device.hardware_model,
+                    restore_behavior=behavior.value,
+                    variant=variant,
+                )
+            )
+        except NoSuchBuildIdentityError:
+            if behavior == Behavior.Update:
+                self.latest_build_identity = (
+                    self.latest_ipsw.build_manifest.get_build_identity(
+                        self.device.hardware_model, restore_behavior=behavior.value
+                    )
+                )
+            else:
+                raise
 
-            build_info = self.latest_build_identity.get('Info')
-            if build_info is None:
-                raise PyMobileDevice3Exception('build identity does not contain an "Info" element')
+        build_info = self.latest_build_identity.get('Info')
+        if build_info is None:
+            raise PyMobileDevice3Exception(
+                'build identity does not contain an "Info" element'
+            )
 
-            device_class = build_info.get('DeviceClass')
-            if device_class is None:
-                raise PyMobileDevice3Exception('build identity does not contain an "DeviceClass" element')
+        device_class = build_info.get('DeviceClass')
+        if device_class is None:
+            raise PyMobileDevice3Exception(
+                'build identity does not contain an "DeviceClass" element'
+            )
 
     def get_tss_response(self):
         # populate parameters
@@ -133,9 +155,13 @@ class Recovery(recovery.Recovery):
 
     def send_component(self, name: str):
         if name == 'RestoreSEP':
-            data = self.latest_build_identity.get_component(name, tss=self.tss).personalized_data
+            data = self.latest_build_identity.get_component(
+                name, tss=self.tss
+            ).personalized_data
         else:
-            data = self.build_identity.get_component(name, tss=self.shsh).personalized_data
+            data = self.build_identity.get_component(
+                name, tss=self.shsh
+            ).personalized_data
 
         self.logger.info(f'Sending {name} ({len(data)} bytes)...')
         self.device.irecv.send_buffer(data)
