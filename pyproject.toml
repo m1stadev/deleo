@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "equinox"
 version = "0.1.0"
-description = "A re-implementation of futurerestore in Python"
+description = "A Python CLI tool for downgrading i(Pad)OS devices."
 authors = ["Mini-Exploit <miniexploitttt@gmail.com>"]
 readme = "README.md"
 

@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 def main(
     device, shsh_blob: BinaryIO, ipsw: str, latest_ipsw: str, update_install: bool
 ):
-    '''A Python CLI tool for downgrading *OS devices.'''
+    '''A Python CLI tool for downgrading i(Pad)OS devices.'''
 
     if shsh_blob:
         shsh = plistlib.load(shsh_blob)

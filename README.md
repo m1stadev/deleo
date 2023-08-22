@@ -17,7 +17,7 @@ Equinox
 </p>
 
 <p align="center">
-A re-implementation of <a href="https://github.com/futurerestore/futurerestore">FutureRestore</a> in Python.
+A Python CLI tool for downgrading i(Pad)OS devices.
 </p>
 
 ## Usage
