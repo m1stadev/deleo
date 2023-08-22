@@ -1,7 +1,7 @@
 <h1 align="center">
 Equinox
 </h1>
-<p align="center">By <a href="https://github.com/Mini-Exploit">Mini-Exploit</a> and <a href="https://github.com/m1stadev">m1sta</a>.
+<p align="center">By <a href="https://github.com/miniexploit">miniexploit</a> and <a href="https://github.com/m1stadev">m1sta</a>.
 
 <p align="center">
   <a href="https://github.com/Mini-Exploit/pyfuturerestore/blob/master/LICENSE">
