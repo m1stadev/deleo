@@ -35,6 +35,7 @@ Options:
   --help                    Show this message and exit
 ```
 ## Notes
+- PyFutureRestore only supports 64-bit devices.
 - In 99% of cases, you will only be able to restore to iOS 15 or below, due to Cryptex incompatibilities, introduced in iOS 16.
 - In place of an actual IPSW file in the `IPSW` or `LATEST_IPSW` arguments, you can pass a URL to an IPSW instead.
 - Ensure that whatever version you are restoring to is compatible with the latest SEP version

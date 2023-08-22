@@ -12,7 +12,7 @@ coloredlogs = "^15.0.1"
 remotezip = "^0.12.1"
 ipsw-parser = "^1.1.5"
 tqdm = "^4.65.0"
-pymobiledevice3 = "^2.2.2"
+pymobiledevice3 = "2.5.1"
 
 [tool.poetry.scripts]
 pyfuturerestore = "pyfuturerestore.__main__:main"
