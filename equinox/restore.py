@@ -18,7 +18,7 @@ from pymobiledevice3.service_connection import LockdownServiceConnection
 from pymobiledevice3.utils import plist_access_path
 from tqdm import trange
 
-from pyfuturerestore.recovery import Recovery
+from equinox.recovery import Recovery
 
 
 class Restore(restore.Restore):

@@ -1,5 +1,5 @@
 <h1 align="center">
-PyFutureRestore
+Equinox
 </h1>
 <p align="center">By <a href="https://github.com/Mini-Exploit">Mini-Exploit</a> and <a href="https://github.com/m1stadev">m1sta</a>.
 
@@ -22,7 +22,7 @@ A re-implementation of <a href="https://github.com/futurerestore/futurerestore">
 
 ## Usage
 ```
-Usage: pyfuturerestore [OPTIONS] IPSW LATEST_IPSW
+Usage: equinox [OPTIONS] IPSW LATEST_IPSW
 
   A Python CLI tool for downgrading *OS devices.
 
@@ -35,8 +35,9 @@ Options:
   --help                    Show this message and exit
 ```
 ## Notes
-- PyFutureRestore only supports 64-bit devices.
-- In 99% of cases, you will only be able to restore to iOS 15 or below, due to Cryptex incompatibilities, introduced in iOS 16.
+- Equinox only supports 64-bit devices.
+- In 99% of cases, you will only be able to restore to iOS 15 or below, due to Cryptex incompatibilities introduced in iOS 16.
+    - More info on that <a href="https://gist.github.com/Cryptiiiic/b82133ac290070939189e1377dc3ac85">here</a>.
 - In place of an actual IPSW file in the `IPSW` or `LATEST_IPSW` arguments, you can pass a URL to an IPSW instead.
 - Ensure that whatever version you are restoring to is compatible with the latest SEP version
     - You can find a spreadsheet that will show you what iOS versions are compatible with the latest SEP version <a href="https://docs.google.com/spreadsheets/d/1Mb1UNm6g3yvdQD67M413GYSaJ4uoNhLgpkc7YKi3LBs">here</a>.
@@ -47,8 +48,8 @@ Options:
 - Valid SHSH blobs
 
 ## Installation
-- Install from [PyPI](https://pypi.org/project/pyfuturerestore/):
-    - ```python3 -m pip install pyfuturerestore```
+- Install from [PyPI](https://pypi.org/project/equinox/):
+    - ```python3 -m pip install equinox```
 - Local installation:
     - `./install.sh`
     - Requires [Poetry](https://python-poetry.org)

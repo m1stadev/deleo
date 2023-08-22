@@ -13,7 +13,7 @@ from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.recovery import Behavior
 from remotezip import RemoteZip
 
-from pyfuturerestore import Restore, __version__
+from equinox import Restore, __version__
 
 coloredlogs.install(level=logging.INFO)
 
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # TODO: Add rest of arguments
 @click.command(cls=Command)
-@click.version_option(message=f'PyFutureRestore {__version__}')
+@click.version_option(message=f'Equinox {__version__}')
 @click.option(
     '-t',
     '--shsh-blob',

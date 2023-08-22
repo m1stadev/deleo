@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyfuturerestore"
+name = "equinox"
 version = "0.1.0"
 description = "A re-implementation of futurerestore in Python"
 authors = ["Mini-Exploit <miniexploitttt@gmail.com>"]
@@ -15,7 +15,7 @@ tqdm = "^4.65.0"
 pymobiledevice3 = "2.5.1"
 
 [tool.poetry.scripts]
-pyfuturerestore = "pyfuturerestore.__main__:main"
+equinox = "equinox.__main__:main"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/Mini-Exploit/pyfuturerestore/issues"
