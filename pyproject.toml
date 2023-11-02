@@ -12,13 +12,13 @@ coloredlogs = "^15.0.1"
 remotezip = "^0.12.1"
 ipsw-parser = "^1.1.5"
 tqdm = "^4.65.0"
-pymobiledevice3 = "2.5.1"
+pymobiledevice3 = "^2.21.1"
 
 [tool.poetry.scripts]
 equinox = "equinox.__main__:main"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/Mini-Exploit/pyfuturerestore/issues"
+"Bug Tracker" = "https://github.com/miniexploit/pyfuturerestore/issues"
 
 [build-system]
 requires = ["poetry-core"]
