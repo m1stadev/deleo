@@ -4,14 +4,14 @@ Equinox
 <p align="center">By <a href="https://github.com/miniexploit">miniexploit</a> and <a href="https://github.com/m1stadev">m1sta</a>.
 
 <p align="center">
-  <a href="https://github.com/Mini-Exploit/pyfuturerestore/blob/master/LICENSE">
-    <image src="https://img.shields.io/github/licenseMini-Exploit/pyfuturerestore">
+  <a href="https://github.com/miniexploit/pyfuturerestore/blob/master/LICENSE">
+    <image src="https://img.shields.io/github/license/miniexploit/pyfuturerestore">
   </a>
-  <a href="https://github.com/Mini-Exploit/pyfuturerestore/stargazers">
-    <image src="https://img.shields.io/github/stars/Mini-Exploit/pyfuturerestore">
+  <a href="https://github.com/miniexploit/pyfuturerestore/stargazers">
+    <image src="https://img.shields.io/github/stars/miniexploit/pyfuturerestore">
   </a>
-  <a href="https://github.com/Mini-Exploit/pyfuturerestore">
-    <image src="https://img.shields.io/tokei/lines/github/Mini-Exploit/pyfuturerestore">
+  <a href="https://github.com/miniexploit/pyfuturerestore">
+    <image src="https://img.shields.io/tokei/lines/github/miniexploit/pyfuturerestore">
   </a>
     <br>
 </p>
@@ -57,7 +57,8 @@ Options:
 ## TODO
 - Add PwnDFU functionality
 - Add a license
+- Add library for automatically finding IPSW
 
 ## Support
 
-For any questions/issues you have, [open an issue](https://github.com/Mini-Exploit/pyfuturerestore/issues) or join my [Discord](https://discord.gg/nK3Uu6BaDN).
+For any questions/issues you have, [open an issue](https://github.com/miniexploit/pyfuturerestore/issues) or join my [Discord](https://discord.gg/nK3Uu6BaDN).
