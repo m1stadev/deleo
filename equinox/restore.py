@@ -5,8 +5,7 @@ from typing import Mapping, Optional
 from zipfile import ZipFile
 
 from ipsw_parser.ipsw import IPSW
-from pymobiledevice3.exceptions import (NoDeviceConnectedError,
-                                        PyMobileDevice3Exception)
+from pymobiledevice3.exceptions import NoDeviceConnectedError, PyMobileDevice3Exception
 from pymobiledevice3.restore import restore
 from pymobiledevice3.restore.base_restore import BaseRestore
 from pymobiledevice3.restore.device import Device
@@ -352,10 +351,10 @@ class Restore(restore.Restore):
                 elif image_name is None or image_name == component:
                     if image_name is None:
                         self.logger.info(
-                            f'found {image_type_k} component \'{component}\''
+                            f"found {image_type_k} component '{component}'"
                         )
                     else:
-                        self.logger.info(f'found component \'{component}\'')
+                        self.logger.info(f"found component '{component}'")
 
                     data_dict[component] = self.build_identity.get_component(
                         component, tss=self.recovery.shsh
@@ -399,7 +398,7 @@ class Restore(restore.Restore):
                 comp_name = 'SE,Firmware'
             else:
                 raise NotImplementedError(
-                    'Neither \'SE,Firmware\' nor \'SE,UpdatePayload\' found in build identity.'
+                    "Neither 'SE,Firmware' nor 'SE,UpdatePayload' found in build identity."
                 )
 
         component_data = self.recovery.latest_build_identity.get_component(
@@ -426,7 +425,7 @@ class Restore(restore.Restore):
             self.logger.info('Received SE ticket')
         else:
             raise PyMobileDevice3Exception(
-                'No \'SE,Ticket\' in TSS response, this might not work'
+                "No 'SE,Ticket' in TSS response, this might not work"
             )
 
         response['FirmwareData'] = component_data
@@ -461,7 +460,7 @@ class Restore(restore.Restore):
             self.logger.info('Received SE ticket')
         else:
             raise PyMobileDevice3Exception(
-                'No \'Yonkers,Ticket\' in TSS response, this might not work'
+                "No 'Yonkers,Ticket' in TSS response, this might not work"
             )
 
         # now get actual component data
@@ -505,7 +504,7 @@ class Restore(restore.Restore):
             self.logger.info('Received SE ticket')
         else:
             raise PyMobileDevice3Exception(
-                'No \'Savage,Ticket\' in TSS response, this might not work'
+                "No 'Savage,Ticket' in TSS response, this might not work"
             )
 
         # now get actual component data

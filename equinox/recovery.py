@@ -8,8 +8,10 @@ from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import recovery
 from pymobiledevice3.restore.base_restore import BaseRestore, Behavior
 from pymobiledevice3.restore.device import Device
-from pymobiledevice3.restore.recovery import (RESTORE_VARIANT_ERASE_INSTALL,
-                                              RESTORE_VARIANT_UPGRADE_INSTALL)
+from pymobiledevice3.restore.recovery import (
+    RESTORE_VARIANT_ERASE_INSTALL,
+    RESTORE_VARIANT_UPGRADE_INSTALL,
+)
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 
 

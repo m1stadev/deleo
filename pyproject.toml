@@ -23,6 +23,9 @@ equinox = "equinox.__main__:main"
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/miniexploit/pyfuturerestore/issues"
 
+[tool.ruff.format]
+quote-style = "single"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
