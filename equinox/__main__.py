@@ -13,7 +13,8 @@ from pymobiledevice3.restore.device import Device
 from pymobiledevice3.restore.recovery import Behavior
 from remotezip import RemoteZip
 
-from equinox import Restore, __version__
+from equinox.restore import Restore
+from equinox import __version__
 
 coloredlogs.install(level=logging.INFO)
 
