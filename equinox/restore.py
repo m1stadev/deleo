@@ -376,16 +376,16 @@ class Restore(restore.Restore):
 
         self._restored.send(req)
 
-    def get_se_firmware_data(self, info: Mapping):
+    def get_se_firmware_data(
+        self, updater_name: str, info: Mapping, arguments: Mapping
+    ):
         chip_id = info.get('SE,ChipID')
         if chip_id is None:
-            chip_id = info.get('SEChipID')
-            if chip_id is None:
-                chip_id = self.recovery.latest_build_identity['Manifest']['SEChipID']
+            chip_id = self.recovery.latest_build_identity['Manifest']['SE,ChipID']
 
         if chip_id == 0x20211:
             comp_name = 'SE,Firmware'
-        elif chip_id in (0x73, 0x64, 0xC8, 0xD2):
+        elif chip_id in (0x73, 0x64, 0xC8, 0xD2, 0x2C, 0x36):
             comp_name = 'SE,UpdatePayload'
         else:
             self.logger.warning(
@@ -405,28 +405,35 @@ class Restore(restore.Restore):
             comp_name
         ).data
 
-        # create SE request
-        request = TSSRequest()
-        parameters = dict()
-
-        # add manifest for latest build_identity to parameters
-        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
-
-        # add SE,* tags from info dictionary to parameters
-        parameters.update(info)
-
-        # add required tags for SE TSS request
-        request.add_se_tags(parameters, None)
-
-        self.logger.info('Sending SE TSS request...')
-        response = request.send_receive()
-
-        if 'SE,Ticket' in response:
-            self.logger.info('Received SE ticket')
-        else:
-            raise PyMobileDevice3Exception(
-                "No 'SE,Ticket' in TSS response, this might not work"
+        if 'DeviceGeneratedTags' in arguments:
+            response = self.get_device_generated_firmware_data(
+                updater_name, info, arguments
             )
+        else:
+            # create SE request
+            request = TSSRequest()
+            parameters = dict()
+
+            # add manifest for latest build_identity to parameters
+            self.recovery.latest_build_identity.populate_tss_request_parameters(
+                parameters
+            )
+
+            # add SE,* tags from info dictionary to parameters
+            parameters.update(info)
+
+            # add required tags for SE TSS request
+            request.add_se_tags(parameters, None)
+
+            self.logger.info('Sending SE TSS request...')
+            response = request.send_receive()
+
+            if 'SE,Ticket' in response:
+                self.logger.info('Received SE ticket')
+            else:
+                raise PyMobileDevice3Exception(
+                    "No 'SE,Ticket' in TSS response, this might not work"
+                )
 
         response['FirmwareData'] = component_data
 
@@ -517,36 +524,48 @@ class Restore(restore.Restore):
 
         return response
 
-    def get_rose_firmware_data(self, info: Mapping):
+    def get_rose_firmware_data(
+        self, updater_name: str, info: Mapping, arguments: Mapping
+    ):
         self.logger.info(f'get_rose_firmware_data: {info}')
 
-        # create Rose request
-        request = TSSRequest()
-        parameters = dict()
-
-        # add manifest for latest build_identity to parameters
-        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
-
-        parameters['ApProductionMode'] = True
-
-        if self.device.is_image4_supported:
-            parameters['ApSecurityMode'] = True
-            parameters['ApSupportsImg4'] = True
+        if 'DeviceGeneratedTags' in arguments:
+            response = self.get_device_generated_firmware_data(
+                updater_name, info, arguments
+            )
+            return response
         else:
-            parameters['ApSupportsImg4'] = False
+            # create Rose request
+            request = TSSRequest()
+            parameters = dict()
 
-        # add Rap,* tags from info dictionary to parameters
-        parameters.update(info)
+            # add manifest for latest build_identity to parameters
+            self.recovery.latest_build_identity.populate_tss_request_parameters(
+                parameters
+            )
 
-        # add required tags for Rose TSS request
-        request.add_rose_tags(parameters, None)
+            parameters['ApProductionMode'] = True
 
-        self.logger.info('Sending Rose TSS request...')
-        response = request.send_receive()
+            if self.device.is_image4_supported:
+                parameters['ApSecurityMode'] = True
+                parameters['ApSupportsImg4'] = True
+            else:
+                parameters['ApSupportsImg4'] = False
 
-        rose_ticket = response.get('Rap,Ticket')
-        if rose_ticket is None:
-            self.logger.error('No "Rap,Ticket" in TSS response, this might not work')
+            # add Rap,* tags from info dictionary to parameters
+            parameters.update(info)
+
+            # add required tags for Rose TSS request
+            request.add_rose_tags(parameters, None)
+
+            self.logger.info('Sending Rose TSS request...')
+            response = request.send_receive()
+
+            rose_ticket = response.get('Rap,Ticket')
+            if rose_ticket is None:
+                self.logger.error(
+                    'No "Rap,Ticket" in TSS response, this might not work'
+                )
 
         comp_name = 'Rap,RTKitOS'
         component_data = self.recovery.latest_build_identity.get_component(
@@ -573,29 +592,40 @@ class Restore(restore.Restore):
 
         return response
 
-    def get_veridian_firmware_data(self, info: Mapping):
+    def get_veridian_firmware_data(
+        self, updater_name: str, info: Mapping, arguments: Mapping
+    ):
         self.logger.info(f'get_veridian_firmware_data: {info}')
         comp_name = 'BMU,FirmwareMap'
 
-        # create Veridian request
-        request = TSSRequest()
-        parameters = dict()
+        if 'DeviceGeneratedTags' in arguments:
+            response = self.get_device_generated_firmware_data(
+                updater_name, info, arguments
+            )
+        else:
+            # create Veridian request
+            request = TSSRequest()
+            parameters = dict()
 
-        # add manifest for latest build_identity to parameters
-        self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
+            # add manifest for latest build_identity to parameters
+            self.recovery.latest_build_identity.populate_tss_request_parameters(
+                parameters
+            )
 
-        # add BMU,* tags from info dictionary to parameters
-        parameters.update(info)
+            # add BMU,* tags from info dictionary to parameters
+            parameters.update(info)
 
-        # add required tags for Veridian TSS request
-        request.add_veridian_tags(parameters, None)
+            # add required tags for Veridian TSS request
+            request.add_veridian_tags(parameters, None)
 
-        self.logger.info('Sending Veridian TSS request...')
-        response = request.send_receive()
+            self.logger.info('Sending Veridian TSS request...')
+            response = request.send_receive()
 
-        ticket = response.get('BMU,Ticket')
-        if ticket is None:
-            self.logger.warning('No "BMU,Ticket" in TSS response, this might not work')
+            ticket = response.get('BMU,Ticket')
+            if ticket is None:
+                self.logger.warning(
+                    'No "BMU,Ticket" in TSS response, this might not work'
+                )
 
         component_data = self.recovery.latest_build_identity.get_component(
             comp_name
@@ -639,6 +669,52 @@ class Restore(restore.Restore):
         response['FirmwareData'] = self.recovery.latest_build_identity.get_component(
             comp_name
         ).data
+
+        return response
+
+    def get_device_generated_firmware_data(
+        self, updater_name: str, info: Mapping, arguments: Mapping
+    ):
+        self.logger.info(
+            f'get_device_generated_firmware_data ({updater_name}): {arguments}'
+        )
+        request = TSSRequest()
+        parameters = dict()
+
+        # add manifest for current build_identity to parameters
+        self.recovery.latest_build_identity.populate_tss_request_parameters(
+            parameters, arguments['DeviceGeneratedTags']['BuildIdentityTags']
+        )
+
+        parameters['@BBTicket'] = True
+        parameters['ApSecurityMode'] = True
+
+        # by default, set it to True
+        parameters['ApProductionMode'] = True
+
+        for k, v in arguments['MessageArgInfo'].items():
+            if k.endswith('ProductionMode'):
+                # if ApProductionMode should be overridden
+                parameters['ApProductionMode'] = bool(v)
+
+        response_ticket = arguments['DeviceGeneratedTags']['ResponseTags'][0]
+
+        parameters.update(arguments['DeviceGeneratedRequest'])
+        request.add_common_tags(info)
+        request.update(parameters)
+
+        for redacted_field in ('RequiresUIDMode',):
+            request.remove_key(redacted_field)
+
+        self.logger.info(f'Sending {updater_name} TSS request...')
+        response = request.send_receive()
+
+        ticket = response.get(response_ticket)
+        if ticket is None:
+            self.logger.warning(
+                f'No "{response_ticket}" in TSS response, this might not work'
+            )
+            self.logger.debug(response)
 
         return response
 
