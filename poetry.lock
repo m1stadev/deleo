@@ -1686,13 +1686,13 @@ testing = ["pytest"]
 
 [[package]]
 name = "pymobiledevice3"
-version = "2.19.0"
+version = "2.25.0"
 description = "Pure python3 implementation for working with iDevices (iPhone, etc...)"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymobiledevice3-2.19.0-py3-none-any.whl", hash = "sha256:8b18a5423570b509b94a817a4d683736c23de2d73b896980133f9ff2c7d875f5"},
-    {file = "pymobiledevice3-2.19.0.tar.gz", hash = "sha256:ebfff83eeea40aabff0850b59f44e415dfbeba200414e31020346a2cbaae090d"},
+    {file = "pymobiledevice3-2.25.0-py3-none-any.whl", hash = "sha256:8c06732f472bb4cc47bbc5a4968fa647da48802bbbe13f8c7f28619fa6d57056"},
+    {file = "pymobiledevice3-2.25.0.tar.gz", hash = "sha256:f637fc985ce52c9ecdd5b66dc76931638449e27b90c296626cee82c020009451"},
 ]
 
 [package.dependencies]
@@ -2607,4 +2607,4 @@ ifaddr = ">=0.1.7"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "6ba673807435059df4fbc5981f5cc0daea1f01fbf55a66fc717296757cc2ace1"
+content-hash = "536ecd0010ee397eff4b794295c5d532472ed1b7d0dec13545a10ab0fb876007"
