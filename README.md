@@ -4,14 +4,14 @@ Equinox
 <p align="center">By <a href="https://github.com/miniexploit">miniexploit</a> and <a href="https://github.com/m1stadev">m1sta</a>.
 
 <p align="center">
-  <a href="https://github.com/miniexploit/pyfuturerestore/blob/master/LICENSE">
-    <image src="https://img.shields.io/github/license/miniexploit/pyfuturerestore">
+  <a href="https://github.com/m1stadev/equinox/blob/master/LICENSE">
+    <image src="https://img.shields.io/github/license/m1stadev/equinox">
   </a>
-  <a href="https://github.com/miniexploit/pyfuturerestore/stargazers">
-    <image src="https://img.shields.io/github/stars/miniexploit/pyfuturerestore">
+  <a href="https://github.com/m1stadev/equinox/stargazers">
+    <image src="https://img.shields.io/github/stars/m1stadev/equinox">
   </a>
-  <a href="https://github.com/miniexploit/pyfuturerestore">
-    <image src="https://img.shields.io/tokei/lines/github/miniexploit/pyfuturerestore">
+  <a href="https://github.com/m1stadev/equinox">
+    <image src="https://img.shields.io/tokei/lines/github/m1stadev/equinox">
   </a>
     <br>
 </p>
@@ -61,4 +61,4 @@ Options:
 
 ## Support
 
-For any questions/issues you have, [open an issue](https://github.com/miniexploit/pyfuturerestore/issues) or join my [Discord](https://discord.gg/nK3Uu6BaDN).
+For any questions/issues you have, [open an issue](https://github.com/m1stadev/equinox/issues) or join miniexploit's [Discord](https://discord.gg/nK3Uu6BaDN).

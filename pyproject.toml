@@ -22,7 +22,7 @@ pymobiledevice3 = "2.25.0"
 equinox = "equinox.__main__:main"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/miniexploit/pyfuturerestore/issues"
+"Bug Tracker" = "https://github.com/m1stadev/equinox/issues"
 
 [tool.ruff.lint]
 extend-select = ["I"]
