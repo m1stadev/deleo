@@ -77,7 +77,13 @@ def main(
         irecv = device
     device = Device(lockdown=lockdown, irecv=irecv)
 
-    behavior = Behavior.Update if update_install else Behavior.Erase
+    if update_install:
+        behavior = Behavior.Update
+        if 'updateInstall' not in shsh.keys():
+            raise click.BadParameter(f'Provided SHSH blob does not support update install: {shsh_blob.name}')
+        shsh = shsh['updateInstall']
+    else:
+        behavior = Behavior.Erase
 
     try:
         Restore(ipsw, latest_ipsw, device, shsh, behavior).update()
