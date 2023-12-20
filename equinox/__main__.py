@@ -1,7 +1,7 @@
 import logging
 import plistlib
 import traceback
-from typing import BinaryIO
+from typing import BinaryIO, Optional
 from zipfile import ZipFile
 
 import click
@@ -49,15 +49,20 @@ logger = logging.getLogger(__name__)
     is_flag=True,
     help='Keep user data during restore (not recommended if downgrading).',
 )
+@click.argument('ota_manifest', required=False, type=click.File('rb'))
 @click.argument('ipsw')
 @click.argument('latest_ipsw')
 def main(
-    device, shsh_blob: BinaryIO, ipsw: str, latest_ipsw: str, update_install: bool
+    device,
+    shsh_blob: BinaryIO,
+    ota_manifest: Optional[BinaryIO],
+    ipsw: str,
+    latest_ipsw: str,
+    update_install: bool
 ):
     """A Python CLI tool for downgrading i(Pad)OS devices."""
 
-    if shsh_blob:
-        shsh = plistlib.load(shsh_blob)
+    shsh = plistlib.load(shsh_blob)
 
     if ipsw.startswith('http://') or ipsw.startswith('https://'):
         ipsw = RemoteZip(ipsw)
@@ -77,10 +82,16 @@ def main(
         irecv = device
     device = Device(lockdown=lockdown, irecv=irecv)
 
-    behavior = Behavior.Update if update_install else Behavior.Erase
+    if update_install:
+        behavior = Behavior.Update
+        if 'updateInstall' not in shsh.keys():
+            raise click.BadParameter(f'Provided SHSH blob does not support update install: {shsh_blob.name}')
+        shsh = shsh['updateInstall']
+    else:
+        behavior = Behavior.Erase
 
     try:
-        Restore(ipsw, latest_ipsw, device, shsh, behavior).update()
+        Restore(ipsw, latest_ipsw, device, shsh, behavior, ota_manifest=ota_manifest.read()).update()
     except Exception:
         # click may "swallow" several exception types so we try to catch them all here
         traceback.print_exc()
