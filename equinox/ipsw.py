@@ -6,7 +6,9 @@ from ipsw_parser.build_manifest import BuildManifest
 
 
 class IPSW(ipsw.IPSW):
-    def __init__(self, archive: zipfile.ZipFile, build_manifest: Optional[bytes]=None):
+    def __init__(
+        self, archive: zipfile.ZipFile, build_manifest: Optional[bytes] = None
+    ):
         super().__init__(archive)
 
         if build_manifest:
