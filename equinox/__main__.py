@@ -49,7 +49,13 @@ logger = logging.getLogger(__name__)
     is_flag=True,
     help='Keep user data during restore (not recommended if downgrading).',
 )
-@click.argument('ota_manifest', required=False, type=click.File('rb'))
+@click.option(
+    '-o',
+    '--ota-manifest',
+    'ota_manifest',
+    type=click.File('rb'),
+    help='OTA build manifest for latest IPSW.',
+)
 @click.argument('ipsw')
 @click.argument('latest_ipsw')
 def main(
