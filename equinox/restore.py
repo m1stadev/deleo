@@ -28,12 +28,21 @@ class Restore(restore.Restore):
         device: Device,
         shsh: Mapping,
         behavior: Behavior,
-        tss: Mapping = None,
+        tss: Optional[Mapping] = None,
+        ota_manifest: Optional[bytes] = None,
     ):
         BaseRestore.__init__(
             self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__)
         )
-        self.recovery = Recovery(ipsw, latest_ipsw, device, shsh, behavior, tss=tss)
+        self.recovery = Recovery(
+            ipsw,
+            latest_ipsw,
+            device,
+            shsh,
+            behavior,
+            tss=tss,
+            ota_manifest=ota_manifest,
+        )
         self.bbtss: Optional[TSSResponse] = None
         self._restored: Optional[RestoredClient] = None
         self._restore_finished = False
