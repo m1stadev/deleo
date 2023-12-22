@@ -2,6 +2,8 @@ import logging
 from typing import Mapping, Optional
 from zipfile import ZipFile
 
+from ipsw_parser.build_manifest import BuildManifest
+from ipsw_parser.ipsw import IPSW
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import recovery
 from pymobiledevice3.restore.base_restore import BaseRestore, Behavior
@@ -11,8 +13,6 @@ from pymobiledevice3.restore.recovery import (
     RESTORE_VARIANT_UPGRADE_INSTALL,
 )
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
-
-from equinox.ipsw import IPSW
 
 RESTORE_VARIANT_OTA_UPGRADE = 'Customer Software Update'
 
@@ -34,7 +34,7 @@ class Recovery(recovery.Recovery):
         self.tss_localpolicy = None
         self.tss_recoveryos_root_ticket = None
         self.restore_boot_args = None
-        self.latest_ipsw = IPSW(latest_ipsw, ota_manifest)
+        self.latest_ipsw = IPSW(latest_ipsw)
         self.shsh = TSSResponse(shsh)
 
         self.logger.debug(
@@ -42,13 +42,13 @@ class Recovery(recovery.Recovery):
         )
 
         if ota_manifest:
-            self.latest_build_identity = (
-                self.latest_ipsw.build_manifest.get_build_identity(
-                    self.device.hardware_model,
-                    restore_behavior=Behavior.Update.value,
-                    variant=RESTORE_VARIANT_OTA_UPGRADE,
-                )
+            ota_manifest = BuildManifest(self.latest_ipsw, ota_manifest)
+            self.latest_build_identity = ota_manifest.get_build_identity(
+                self.device.hardware_model,
+                restore_behavior=Behavior.Update.value,
+                variant=RESTORE_VARIANT_OTA_UPGRADE,
             )
+
         else:
             variant = {
                 Behavior.Update: RESTORE_VARIANT_UPGRADE_INSTALL,
