@@ -58,7 +58,7 @@ def main(
     ota_manifest: Optional[BinaryIO],
     ipsw: str,
     latest_ipsw: str,
-    update_install: bool
+    update_install: bool,
 ):
     """A Python CLI tool for downgrading i(Pad)OS devices."""
 
@@ -85,13 +85,17 @@ def main(
     if update_install:
         behavior = Behavior.Update
         if 'updateInstall' not in shsh.keys():
-            raise click.BadParameter(f'Provided SHSH blob does not support update install: {shsh_blob.name}')
+            raise click.BadParameter(
+                f'Provided SHSH blob does not support update install: {shsh_blob.name}'
+            )
         shsh = shsh['updateInstall']
     else:
         behavior = Behavior.Erase
 
     try:
-        Restore(ipsw, latest_ipsw, device, shsh, behavior, ota_manifest=ota_manifest.read()).update()
+        Restore(
+            ipsw, latest_ipsw, device, shsh, behavior, ota_manifest=ota_manifest.read()
+        ).update()
     except Exception:
         # click may "swallow" several exception types so we try to catch them all here
         traceback.print_exc()
