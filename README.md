@@ -53,8 +53,9 @@ Options:
     - Requires [Poetry](https://python-poetry.org)
 
 ## TODO
-- Add PwnDFU functionality
-- Add library for automatically finding IPSW
+- Add functionality for pwned restores
+- Automatically find IPSWs when given version/buildid
+- Change name (`equinox` is taken on PyPI :/)
 
 ## Support
 
