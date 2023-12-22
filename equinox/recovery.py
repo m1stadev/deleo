@@ -2,14 +2,19 @@ import logging
 from typing import Mapping, Optional
 from zipfile import ZipFile
 
-from ipsw_parser.exceptions import NoSuchBuildIdentityError
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import recovery
 from pymobiledevice3.restore.base_restore import BaseRestore, Behavior
 from pymobiledevice3.restore.device import Device
+from pymobiledevice3.restore.recovery import (
+    RESTORE_VARIANT_ERASE_INSTALL,
+    RESTORE_VARIANT_UPGRADE_INSTALL,
+)
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
 
 from equinox.ipsw import IPSW
+
+RESTORE_VARIANT_OTA_UPGRADE = 'Customer Software Update'
 
 
 class Recovery(recovery.Recovery):
@@ -36,15 +41,27 @@ class Recovery(recovery.Recovery):
             'scanning 2nd BuildManifest.plist for the correct BuildIdentity'
         )
 
-        try:
+        if ota_manifest:
             self.latest_build_identity = (
                 self.latest_ipsw.build_manifest.get_build_identity(
                     self.device.hardware_model,
                     restore_behavior=Behavior.Update.value,
+                    variant=RESTORE_VARIANT_OTA_UPGRADE,
                 )
             )
-        except NoSuchBuildIdentityError:
-            raise
+        else:
+            variant = {
+                Behavior.Update: RESTORE_VARIANT_UPGRADE_INSTALL,
+                Behavior.Erase: RESTORE_VARIANT_ERASE_INSTALL,
+            }[behavior]
+
+            self.latest_build_identity = (
+                self.latest_ipsw.build_manifest.get_build_identity(
+                    self.device.hardware_model,
+                    restore_behavior=behavior.value,
+                    variant=variant,
+                )
+            )
 
         build_info = self.latest_build_identity.get('Info')
         if build_info is None:
