@@ -5,7 +5,11 @@ from typing import Mapping, Optional
 from zipfile import ZipFile
 
 from ipsw_parser.ipsw import IPSW
-from pymobiledevice3.exceptions import NoDeviceConnectedError, PyMobileDevice3Exception
+from pymobiledevice3.exceptions import (
+    ConnectionFailedError,
+    NoDeviceConnectedError,
+    PyMobileDevice3Exception,
+)
 from pymobiledevice3.restore import restore
 from pymobiledevice3.restore.base_restore import BaseRestore
 from pymobiledevice3.restore.device import Device
@@ -831,5 +835,5 @@ class Restore(restore.Restore):
             try:
                 self._restored = RestoredClient()
                 break
-            except NoDeviceConnectedError:
+            except (ConnectionFailedError, NoDeviceConnectedError):
                 pass
