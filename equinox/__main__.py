@@ -98,9 +98,14 @@ def main(
     else:
         behavior = Behavior.Erase
 
+    if ota_manifest:
+        manifest_data = ota_manifest.read()
+    else:
+        manifest_data = None
+
     try:
         Restore(
-            ipsw, latest_ipsw, device, shsh, behavior, ota_manifest=ota_manifest.read()
+            ipsw, latest_ipsw, device, shsh, behavior, ota_manifest=manifest_data
         ).update()
     except Exception:
         # click may "swallow" several exception types so we try to catch them all here
