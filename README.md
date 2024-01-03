@@ -7,6 +7,9 @@ Equinox
   <a href="https://github.com/m1stadev/equinox/blob/master/LICENSE">
     <image src="https://img.shields.io/github/license/m1stadev/equinox">
   </a>
+  <a href="https://github.com/m1stadev/equinox">
+    <image src="https://tokei.rs/b1/github/m1stadev/equinox?category=code&lang=python&style=flat">
+  </a>
   <a href="https://github.com/m1stadev/equinox/stargazers">
     <image src="https://img.shields.io/github/stars/m1stadev/equinox">
   </a>
@@ -51,11 +54,6 @@ Options:
 - Local installation:
     - `./install.sh`
     - Requires [Poetry](https://python-poetry.org)
-
-## TODO
-- Add functionality for "pwned" restores
-- Automatically find IPSWs when given version/buildid
-- Change name (`equinox` is taken on PyPI :/)
 
 ## Support
 
