@@ -837,3 +837,12 @@ class Restore(restore.Restore):
                 break
             except (ConnectionFailedError, NoDeviceConnectedError):
                 pass
+
+    def update(self, set_nonce: bool=False):
+        if set_nonce:
+            self.recovery.set_nonce()
+
+        self.recovery.boot_ramdisk()
+
+        # device is finally in restore mode, let's do this
+        self.restore_device()

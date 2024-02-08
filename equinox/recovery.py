@@ -1,9 +1,14 @@
 import logging
+import time
 from typing import Mapping, Optional
 from zipfile import ZipFile
 
+from eyepatch.iboot import iBoot64Patcher
 from ipsw_parser.build_manifest import BuildManifest
+from ipsw_parser.component import Component
 from ipsw_parser.ipsw import IPSW
+from lykos import Client
+from pyimg4 import IM4P, Keybag
 from pymobiledevice3.exceptions import PyMobileDevice3Exception
 from pymobiledevice3.restore import recovery
 from pymobiledevice3.restore.base_restore import BaseRestore, Behavior
@@ -13,6 +18,7 @@ from pymobiledevice3.restore.recovery import (
     RESTORE_VARIANT_UPGRADE_INSTALL,
 )
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
+from usb import USBError
 
 RESTORE_VARIANT_OTA_UPGRADE = 'Customer Software Update'
 
@@ -159,13 +165,100 @@ class Recovery(recovery.Recovery):
 
     def send_component(self, name: str):
         if name == 'RestoreSEP':
-            data = self.latest_build_identity.get_component(
-                name, tss=self.tss
-            ).personalized_data
+            component = self.latest_build_identity.get_component(name, tss=self.tss)
         else:
-            data = self.build_identity.get_component(
-                name, tss=self.shsh
-            ).personalized_data
+            component = self.build_identity.get_component(name, tss=self.shsh)
 
-        self.logger.info(f'Sending {name} ({len(data)} bytes)...')
-        self.device.irecv.send_buffer(data)
+        self.send_component_data(component)
+
+    def send_component_data(self, component: Component):
+        self.logger.info(
+            f'Sending {component.name} ({len(component.personalized_data)} bytes)...'
+        )
+        self.device.irecv.send_buffer(component.personalized_data)
+
+    def pwndfu_enter_pwnrecovery(self):
+        if 'PWND' not in self.device.irecv._device_info.keys():
+            self.logger.debug('device not in pwndfu')
+            return
+
+        # fetch decryption keys
+        client = Client()
+        key_data = client.get_key_data(
+            device=self.device.irecv.product_type,
+            buildid=self.ipsw.build_manifest.product_build_version,
+            codename=self.build_identity['Info']['BuildTrain'],
+        )
+        self.logger.debug(key_data)
+
+        # decrypt iBSS
+        comp = self.build_identity.get_component('iBSS', tss=self.shsh)
+        im4p = IM4P(comp.data)
+        dec_key = next(key for key in key_data if key.name == 'ibss')
+        im4p.payload.decrypt(Keybag(iv=dec_key.iv, key=dec_key.key))
+        dec_data = im4p.payload.output().data
+
+        # patch iBSS
+        patcher = iBoot64Patcher(dec_data)
+        patcher.patch_sigchecks()
+        im4p.payload._data = patcher.data
+        comp._data = im4p.output()
+
+        # send iBSS
+        self.send_component_data(comp)
+
+        self.reconnect_irecv()
+
+        if 'SRTG' in self.device.irecv._device_info:
+            raise PyMobileDevice3Exception('Device failed to enter recovery')
+
+        if self.build_identity.build_manifest.build_major > 8:
+            # reconnect
+            self.reconnect_irecv()
+
+            self.device.irecv.set_configuration(1)
+
+            # decrypt iBEC
+            comp = self.build_identity.get_component('iBEC', tss=self.shsh)
+            im4p = IM4P(comp.data)
+            dec_key = next(key for key in key_data if key.name == 'ibec')
+            im4p.payload.decrypt(Keybag(iv=dec_key.iv, key=dec_key.key))
+            dec_data = im4p.payload.output().data
+
+            # patch iBEC
+            patcher = iBoot64Patcher(dec_data)
+            patcher.patch_sigchecks()
+            patcher.patch_nvram()
+            patcher.patch_freshnonce()
+            im4p.payload._data = patcher.data
+            comp._data = im4p.output()
+
+            # send iBEC
+            mode = self.device.irecv.mode
+            self.send_component_data(comp)
+
+            if self.device.irecv and mode.is_recovery:
+                time.sleep(1)
+                self.device.irecv.send_command('go', b_request=1)
+
+                if self.build_identity.build_manifest.build_major < 20:
+                    try:
+                        self.device.irecv.ctrl_transfer(0x21, 1, timeout=5000)
+                    except USBError:
+                        pass
+
+                self.logger.debug('Waiting for device to disconnect...')
+                time.sleep(10)
+
+        self.logger.debug('Waiting for device to reconnect in pwnrecovery mode...')
+        self.reconnect_irecv(is_recovery=True)
+
+    def set_nonce(self):
+        self.pwndfu_enter_pwnrecovery()
+        time.sleep(1)
+        self.logger.info(f"setenv com.apple.System.boot-nonce {self.shsh['generator']}")
+        self.device.irecv.send_command(
+            f"setenv com.apple.System.boot-nonce {self.shsh['generator']}"
+        )
+        self.set_autoboot(False)
+        self.device.irecv.reboot()
