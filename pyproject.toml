@@ -14,6 +14,8 @@ coloredlogs = "^15.0.1"
 remotezip = "^0.12.1"
 ipsw-parser = "^1.1.5"
 tqdm = "^4.65.0"
+lykos = {git = "https://github.com/m1stadev/lykos.git"}
+eyepatch = {git = "https://github.com/m1stadev/eyepatch.git"}
 # Be careful when changing required pymd3 version, any update that changes any restore-related code will most likely break Equinox.
 pymobiledevice3 = "2.34.0"
 
@@ -22,6 +24,9 @@ equinox = "equinox.__main__:main"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/m1stadev/equinox/issues"
+
+[tool.ruff]
+target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = ["I"]
