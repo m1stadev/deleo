@@ -37,7 +37,7 @@ Options:
 ```
 ## Notes
 - deleo only supports 64-bit devices.
-- You can only restore using a signed 15.x or below IPSW as latest.
+- In most cases, you can only restore using a signed 15.x or below IPSW as latest.
     - More info on that <a href="https://gist.github.com/Cryptiiiic/b82133ac290070939189e1377dc3ac85">here</a>.
 - In place of an actual IPSW file in the `IPSW` or `LATEST_IPSW` arguments, you can pass a URL to an IPSW instead.
   - This is not recommended for the `IPSW` argument, as downloading the RootFS dmg directly from the ZIP will take quite a while...
