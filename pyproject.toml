@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "deleo"
-version = "0.1.0"
+version = "0.1"
 description = "A Python CLI tool for downgrading i(Pad)OS devices."
 authors = ["m1stadev <adamhamdi31@gmail.com>"]
 license = "MIT"
