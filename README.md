@@ -1,17 +1,17 @@
 <h1 align="center">
-Equinox
+deleo
 </h1>
 <p align="center">By <a href="https://github.com/m1stadev">m1sta</a>.
 
 <p align="center">
-  <a href="https://github.com/m1stadev/equinox/blob/master/LICENSE">
-    <image src="https://img.shields.io/github/license/m1stadev/equinox">
+  <a href="https://github.com/m1stadev/deleo/blob/master/LICENSE">
+    <image src="https://img.shields.io/github/license/m1stadev/deleo">
   </a>
-  <a href="https://github.com/m1stadev/equinox">
-    <image src="https://tokei.rs/b1/github/m1stadev/equinox?category=code&lang=python&style=flat">
+  <a href="https://github.com/m1stadev/deleo">
+    <image src="https://tokei.rs/b1/github/m1stadev/deleo?category=code&lang=python&style=flat">
   </a>
-  <a href="https://github.com/m1stadev/equinox/stargazers">
-    <image src="https://img.shields.io/github/stars/m1stadev/equinox">
+  <a href="https://github.com/m1stadev/deleo/stargazers">
+    <image src="https://img.shields.io/github/stars/m1stadev/deleo">
   </a>
     <br>
 </p>
@@ -22,7 +22,7 @@ A Python CLI tool for downgrading i(Pad)OS devices.
 
 ## Usage
 ```
-Usage: equinox [OPTIONS] IPSW LATEST_IPSW
+Usage: deleo [OPTIONS] IPSW LATEST_IPSW
 
   A Python CLI tool for downgrading i(Pad)OS devices.
 
@@ -36,7 +36,7 @@ Options:
   --help                       Show this message and exit.
 ```
 ## Notes
-- Equinox only supports 64-bit devices.
+- deleo only supports 64-bit devices.
 - You can only restore using a signed 15.x or below IPSW as latest.
     - More info on that <a href="https://gist.github.com/Cryptiiiic/b82133ac290070939189e1377dc3ac85">here</a>.
 - In place of an actual IPSW file in the `IPSW` or `LATEST_IPSW` arguments, you can pass a URL to an IPSW instead.
@@ -49,12 +49,12 @@ Options:
 - Valid SHSH blobs
 
 ## Installation
-- ~~Install from [PyPI](https://pypi.org/project/equinox/):~~
-    - ~~```python3 -m pip install equinox```~~
+- Install from [PyPI](https://pypi.org/project/deleo/):
+    - ```python3 -m pip install deleo```
 - Local installation:
     - `./install.sh`
     - Requires [Poetry](https://python-poetry.org)
 
 ## Support
 
-For any questions/issues you have, [open an issue](https://github.com/m1stadev/equinox/issues).
+For any questions/issues you have, [open an issue](https://github.com/m1stadev/deleo/issues).

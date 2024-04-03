@@ -21,7 +21,7 @@ from pymobiledevice3.service_connection import LockdownServiceConnection
 from pymobiledevice3.utils import plist_access_path
 from tqdm import trange
 
-from equinox.recovery import Recovery
+from deleo.recovery import Recovery
 
 
 class Restore(restore.Restore):
