@@ -17,7 +17,7 @@ from pymobiledevice3.restore.ftab import Ftab
 from pymobiledevice3.restore.recovery import Behavior
 from pymobiledevice3.restore.restored_client import RestoredClient
 from pymobiledevice3.restore.tss import TSSRequest, TSSResponse
-from pymobiledevice3.service_connection import LockdownServiceConnection
+from pymobiledevice3.service_connection import ServiceConnection
 from pymobiledevice3.utils import plist_access_path
 from tqdm import trange
 
@@ -53,7 +53,7 @@ class Restore(restore.Restore):
 
         # used when ignore_fdr=True, to store an active FDR connection just to make the device believe it can actually
         # perform an FDR communication, but without really establishing any
-        self._fdr: Optional[LockdownServiceConnection] = None
+        self._fdr: Optional[ServiceConnection] = None
         self._ignore_fdr = False
 
         # query preflight info while device may still be in normal mode
