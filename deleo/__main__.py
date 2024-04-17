@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # TODO: Add rest of arguments
 @click.command(cls=Command)
-@click.version_option(message=f'Equinox {__version__}')
+@click.version_option(message=f'deleo {__version__}')
 @click.option(
     '-t',
     '--shsh-blob',
