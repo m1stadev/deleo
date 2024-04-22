@@ -35,6 +35,13 @@ Options:
   -o, --ota-manifest FILENAME  OTA build manifest for latest IPSW.
   --help                       Show this message and exit.
 ```
+## Requirements
+- Python 3.8 or higher
+- Valid SHSH blobs
+- A Linux or macOS system
+  - Windows support will be coming in the future
+- `usbmuxd` on Linux systems
+
 ## Notes
 - deleo only supports 64-bit devices.
 - In most cases, you can only restore using a signed 15.x or below IPSW as latest.
@@ -43,10 +50,12 @@ Options:
   - This is not recommended for the `IPSW` argument, as downloading the RootFS dmg directly from the ZIP will take quite a while...
 - Ensure that whatever version you are restoring to is compatible with the SEP version in the latest IPSW.
     - You can find a spreadsheet that will show you what iOS versions are compatible with the latest SEP version <a href="https://docs.google.com/spreadsheets/d/1Mb1UNm6g3yvdQD67M413GYSaJ4uoNhLgpkc7YKi3LBs">here</a>.
+- On Linux systems that utilize `udev`, you may need to install proper `udev` rules to have proper access to connected *OS devices
+  - Typically, you only need to install `libirecovery` from your distribution's package manager.
+  - Alternatively, you can download a rules file provided <a href="https://gist.github.com/m1stadev/c0c9313c37a2ed42ceb71903a5102677">here<a/>, and place it in `/etc/udev/rules.d`
+  - Once the rules file is installed, reboot to ensure that the rules file is detected properly. 
 
-## Requirements
-- Python 3.8 or higher
-- Valid SHSH blobs
+
 
 ## Installation
 - Install from [PyPI](https://pypi.org/project/deleo/):
