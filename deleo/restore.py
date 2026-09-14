@@ -1,7 +1,7 @@
 import logging
 import plistlib
 import struct
-from typing import Mapping, Optional
+from collections.abc import Mapping
 from zipfile import ZipFile
 
 from ipsw_parser.ipsw import IPSW
@@ -32,8 +32,8 @@ class Restore(restore.Restore):
         device: Device,
         shsh: Mapping,
         behavior: Behavior,
-        tss: Optional[Mapping] = None,
-        ota_manifest: Optional[bytes] = None,
+        tss: Mapping | None = None,
+        ota_manifest: bytes | None = None,
     ):
         BaseRestore.__init__(
             self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__)
@@ -47,13 +47,13 @@ class Restore(restore.Restore):
             tss=tss,
             ota_manifest=ota_manifest,
         )
-        self.bbtss: Optional[TSSResponse] = None
-        self._restored: Optional[RestoredClient] = None
+        self.bbtss: TSSResponse | None = None
+        self._restored: RestoredClient | None = None
         self._restore_finished = False
 
         # used when ignore_fdr=True, to store an active FDR connection just to make the device believe it can actually
         # perform an FDR communication, but without really establishing any
-        self._fdr: Optional[ServiceConnection] = None
+        self._fdr: ServiceConnection | None = None
         self._ignore_fdr = False
 
         # query preflight info while device may still be in normal mode
@@ -196,7 +196,7 @@ class Restore(restore.Restore):
         firmware_path = llb_path[: llb_filename_offset - 1]
         self.logger.info(f'Found firmware path: {firmware_path}')
 
-        firmware_files = dict()
+        firmware_files = {}
         try:
             firmware = self.ipsw.get_firmware(firmware_path)
             firmware_files = firmware.get_files()
@@ -350,7 +350,7 @@ class Restore(restore.Restore):
             self.logger.info(f'About to send {image_data_k}...')
 
         matched_images = []
-        data_dict = dict()
+        data_dict = {}
 
         for component, manifest_entry in build_id_manifest.items():
             if not isinstance(manifest_entry, dict):
@@ -373,7 +373,7 @@ class Restore(restore.Restore):
                         component, tss=self.recovery.shsh
                     ).personalized_data
 
-        req = dict()
+        req = {}
         if want_image_list:
             req[image_list_k] = matched_images
             self.logger.info(f'Sending {image_type_k} image list')
@@ -425,7 +425,7 @@ class Restore(restore.Restore):
         else:
             # create SE request
             request = TSSRequest()
-            parameters = dict()
+            parameters = {}
 
             # add manifest for latest build_identity to parameters
             self.recovery.latest_build_identity.populate_tss_request_parameters(
@@ -455,7 +455,7 @@ class Restore(restore.Restore):
     def get_yonkers_firmware_data(self, info: Mapping):
         # create Yonkers request
         request = TSSRequest()
-        parameters = dict()
+        parameters = {}
 
         # add manifest for latest build_identity to parameters
         self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
@@ -499,7 +499,7 @@ class Restore(restore.Restore):
     def get_savage_firmware_data(self, info: Mapping):
         # create Savage request
         request = TSSRequest()
-        parameters = dict()
+        parameters = {}
 
         # add manifest for latest build_identity to parameters
         self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
@@ -550,7 +550,7 @@ class Restore(restore.Restore):
         else:
             # create Rose request
             request = TSSRequest()
-            parameters = dict()
+            parameters = {}
 
             # add manifest for latest build_identity to parameters
             self.recovery.latest_build_identity.populate_tss_request_parameters(
@@ -618,7 +618,7 @@ class Restore(restore.Restore):
         else:
             # create Veridian request
             request = TSSRequest()
-            parameters = dict()
+            parameters = {}
 
             # add manifest for latest build_identity to parameters
             self.recovery.latest_build_identity.populate_tss_request_parameters(
@@ -659,7 +659,7 @@ class Restore(restore.Restore):
 
         # create Baobab request
         request = TSSRequest()
-        parameters = dict()
+        parameters = {}
 
         # add manifest for latest build_identity to parameters
         self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
@@ -692,7 +692,7 @@ class Restore(restore.Restore):
             f'get_device_generated_firmware_data ({updater_name}): {arguments}'
         )
         request = TSSRequest()
-        parameters = dict()
+        parameters = {}
 
         # add manifest for current build_identity to parameters
         self.recovery.latest_build_identity.populate_tss_request_parameters(
@@ -738,7 +738,7 @@ class Restore(restore.Restore):
 
         # create Timer request
         request = TSSRequest()
-        parameters = dict()
+        parameters = {}
 
         # add manifest for latest build_identity to parameters
         self.recovery.latest_build_identity.populate_tss_request_parameters(parameters)
