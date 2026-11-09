@@ -1,5 +1,5 @@
 import logging
-from typing import Mapping, Optional
+from collections.abc import Mapping
 from zipfile import ZipFile
 
 from ipsw_parser.build_manifest import BuildManifest
@@ -25,8 +25,8 @@ class Recovery(recovery.Recovery):
         device: Device,
         shsh: Mapping,
         behavior: Behavior,
-        tss: Optional[Mapping] = None,
-        ota_manifest: Optional[bytes] = None,
+        tss: Mapping | None = None,
+        ota_manifest: bytes | None = None,
     ):
         BaseRestore.__init__(
             self, ipsw, device, tss, behavior, logger=logging.getLogger(__name__)
@@ -77,7 +77,7 @@ class Recovery(recovery.Recovery):
 
     def get_tss_response(self):
         # populate parameters
-        parameters = dict()
+        parameters = {}
 
         parameters['ApECID'] = self.device.ecid
         if self.device.ap_nonce is not None:

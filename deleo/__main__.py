@@ -1,7 +1,7 @@
 import logging
 import plistlib
 import traceback
-from typing import BinaryIO, Optional
+from typing import BinaryIO
 from zipfile import ZipFile
 
 import click
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 def main(
     device,
     shsh_blob: BinaryIO,
-    ota_manifest: Optional[BinaryIO],
+    ota_manifest: BinaryIO | None,
     ipsw: str,
     latest_ipsw: str,
     update_install: bool,
@@ -70,12 +70,12 @@ def main(
 
     shsh = plistlib.load(shsh_blob)
 
-    if ipsw.startswith('http://') or ipsw.startswith('https://'):
+    if ipsw.startswith(('http://', 'https://')):
         ipsw = RemoteZip(ipsw)
     else:
         ipsw = ZipFile(ipsw)
 
-    if latest_ipsw.startswith('http://') or latest_ipsw.startswith('https://'):
+    if latest_ipsw.startswith(('http://', 'https://')):
         latest_ipsw = RemoteZip(latest_ipsw)
     else:
         latest_ipsw = ZipFile(latest_ipsw)
@@ -90,7 +90,7 @@ def main(
 
     if update_install:
         behavior = Behavior.Update
-        if 'updateInstall' not in shsh.keys():
+        if 'updateInstall' not in shsh:
             raise click.BadParameter(
                 f'Provided SHSH blob does not support update install: {shsh_blob.name}'
             )
